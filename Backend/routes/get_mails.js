@@ -14,8 +14,6 @@ function fetch_emails(imap, callback) {
     openInbox(function(err, box) {
     if (err) throw err;
 
-    // Change the date with the one from which you want receive emails
-    //Unseen means you'll only get mails that are unseen
     imap.search(['ALL'], function(err, results) { 
         if (err) throw err;
 
@@ -31,7 +29,6 @@ function fetch_emails(imap, callback) {
                 chunks.push(chunk);
             });
 
-            // Send the buffer or you can put it into a var
             stream.on("end", function () {
                 var mail = Buffer.concat(chunks).toString()
                 mail = mail.substring(mail.indexOf('From: '))
@@ -77,8 +74,8 @@ function fetch_emails(imap, callback) {
 }
 
 var imap = new Imap({
-    user: 'mail.system.test123@gmail.com', // example: aakanksha.jain8@gmail.com
-    password: 'mail_test', // Remember, using just password for authentication will only work if you have less secured apps enabled 
+    user: 'mail.system.test123@gmail.com',
+    password: 'mail_test', 
     host: 'imap.gmail.com', 
     port: 993,
     tlsOptions: {
