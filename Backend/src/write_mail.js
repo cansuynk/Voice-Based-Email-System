@@ -1,6 +1,6 @@
 const Gmail = require('gmail-send')
 
-function send_email(options, content) {
+function send_email(options, content,) {
     const send = Gmail(options)
     send({text: content, }, (error, result, fullResult) => {
         if (error) 

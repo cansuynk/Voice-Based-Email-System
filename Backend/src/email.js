@@ -1,10 +1,88 @@
 // Step 1: Include required modules
 var Imap = require('imap'),
-    inspect = require('util').inspect; 
-    var fs = require('fs'), fileStream; 
+inspect = require('util').inspect; 
+const Gmail = require('gmail-send');
+const {SUCCESS, NOT_AUTH, UNEXPECTED} = require("./error_codes.js");
 
 
-function fetch_emails(imap, callback) {
+exports.fetch_emails = function(req, response) {
+    if (req.session.address) {
+        get_emails(new Imap({
+            user: req.session.address,
+            password: req.session.password, 
+            host: 'imap.gmail.com', 
+            port: 993,
+            tlsOptions: {
+            rejectUnauthorized: false
+            },
+            tls: true
+        }), (emails) => {
+            response.send( {
+                code: SUCCESS,
+                detail: "Success",
+                data: emails
+            })
+        })
+    } else {
+        response.send({
+            code: NOT_AUTH,
+            detail: "user not authenticated",
+            data: null
+        })
+    }
+}
+
+exports.send_email = function(req, response) {
+    if (req.session.address) {
+        const body = req.body;
+        const subject = body["subject"];
+        const to = body["to"];
+        const content = body["content"]
+        write_email({
+            user: req.session.address,
+            pass: req.session.password,
+            to:   to,
+            subject: subject
+        }, content, (err, res) => {
+            if (err) {
+                response.send({
+                    code: UNEXPECTED,
+                    detail: err,
+                    data: null
+                })
+            } else {
+                response.send({
+                    code: SUCCESS,
+                    detail: "Success",
+                    data: null
+                })
+
+            }
+        })
+
+    } else {
+        response.send({
+            code: NOT_AUTH,
+            detail: "user not authenticated",
+            data: null
+        })
+    }
+}
+
+
+function write_email(options, content, callback) {
+    const send = Gmail(options)
+    send({text: content, }, (error, result, fullResult) => {
+        if (error) {
+            callback(error, null);
+        } 
+        else {
+            callback(null, result);
+        }
+    })
+}
+
+function get_emails(imap, callback) {
     var emails = []
     function openInbox(cb) {
         imap.openBox('INBOX', true, cb);
@@ -72,23 +150,3 @@ function fetch_emails(imap, callback) {
     
     imap.connect(); 
 }
-
-var imap = new Imap({
-    user: 'mail.system.test123@gmail.com',
-    password: 'mail_test', 
-    host: 'imap.gmail.com', 
-    port: 993,
-    tlsOptions: {
-      rejectUnauthorized: false
-      },
-    tls: true
-  });
-
-  
-fetch_emails(imap, function(emails) {
-    for(var i = 0; i < emails.length; i++ ){
-        console.log(emails[i])
-    }
-})
-
-
