@@ -1,0 +1,114 @@
+.app_div {
+    position: absolute;
+    top: 10%;
+    right: 10%;
+    bottom: 10%;
+    left: 10%;
+    border: 1px solid #5755d9;
+}
+.header_section {
+    float: left;
+    width: 100%;
+    height: 15%;
+    background-color: #80d7ff;
+    background-image: url("./login_background.jpeg");
+    background-repeat: no-repeat;
+    background-size: 15% 100%;
+}
+
+.header_section .header_title {
+    float: right;
+    color: white;
+    font-size: 15pt;
+    margin-top: 3%;
+    margin-right: 2%;
+}
+.menu_div {
+    float: left;
+    width: 15%;
+    top: 15%;
+    bottom: 0%;
+    background: #80d7ff;
+    position: absolute;
+    border-right: 1px solid #5755d9;
+    border-top: 1px solid #5755d9;
+}
+.mails_div {
+    float: left;
+    width: 35%;
+    background: #ccefff;
+    position: absolute;
+    left: 15%;
+    top: 15%;
+    bottom: 0%;
+    border-right: 1px solid #5755d9;
+    border-top: 1px solid #5755d9;
+}
+.mailcontent_div {
+    float: left;
+    width: 50%;
+    position: absolute;
+    left: 50%;
+    top: 15%;
+    bottom: 0%;
+    background: white;
+    border-top: 0.5px solid #5755d9;
+}
+.mailbox_div {
+    float: left;
+    text-align: center;
+    height: auto;
+    width: 100%;
+    margin-top: 70%;
+    color: #5755d9;
+}
+
+.mailboxitem_div {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+.btn{
+    width:60%;
+}
+.menu {
+    background: white;
+    margin: 20% 10% 10%;
+    color: #5755d9;
+    font-size: 12pt;
+    font-weight: bold;
+    border: 0.5px solid #5755d9;
+}
+#noselected_div {
+  
+    text-align: center;
+    border: 1px solid #faebcc;
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+}
+.noselected_div {
+    height: 6%;
+    margin-top: 3%;
+    text-align: center;
+    border: 1px solid #faebcc;
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+}
+.mailbody_div {
+   
+    margin: 5% 5% 5% 5%;
+
+}
+#sendemail_button {
+    background-color: #5755d9;
+    width: 60%;
+    color: white;
+}
+.form-horizontal {
+    color: #5755d9;
+    margin: 5% 5% 5% 5%;
+    border: 1px solid #5755d9;
+    padding: 5%;
+}
