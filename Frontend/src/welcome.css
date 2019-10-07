@@ -12,7 +12,39 @@
     background-repeat: no-repeat;
     background-size: cover;
     position: relative;
+    height: 200px;
 
+}
+.header {
+    padding-left: 50px;
+    padding-right: 50px;
+    color: #008bcc;
+    margin-top:60px;
+    text-align:center;
+}
+.content {
+    padding: 50px 50px 50px 50px;
+    color: #007ab3;
+}
+.btn.btn-primary {
+    background-color: #007ab3;
+    background: #007ab3;
+    border-color: #007ab3;
+}
+.page {
+    height: 100vh;
+    display: table-cell;
+    vertical-align: middle;
+    border: 1px solid LightGray;
+    background: #d0f0ff;
+}
+.logo {
+    
+    background-image: url("./login_background.jpeg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
     height: 200px;
 
 }

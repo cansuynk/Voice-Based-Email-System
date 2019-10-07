@@ -10,9 +10,9 @@ class Welcome extends React.Component {
             password: "",
             email_for_registration: "",
             password_for_registration: "",
-          
+
         }
-     
+
         this.handleChange = this.handleChange.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
         this.handleSignSubmit = this.handleSignSubmit.bind(this);
@@ -37,19 +37,19 @@ class Welcome extends React.Component {
     render() {
 
         return (
-                      
+
             <div className="page">
                 <div className="logo"></div>
                 <div className="header">
                     <h2>Welcome To The Voice Based Email System</h2>
                 </div>
-               
+
                 <div className="content">
                     <div className="col-sm-8 main-section">
 
                         <form onSubmit={this.handleLoginSubmit}>
                             Email
-                            <div className="form-group">     
+                            <div className="form-group">
                                 <input
                                     className="form-input"
                                     type="email" placeholder="Email"
@@ -60,8 +60,8 @@ class Welcome extends React.Component {
                                     required
                                 />
                             </div>
-                            Password 
-                            <div className="form-group"> 
+                            Password
+                            <div className="form-group">
                                 <input
                                     className="form-input"
                                     type="password"
@@ -85,7 +85,7 @@ class Welcome extends React.Component {
                         <div className="divider text-center" data-content="OR SIGN UP"></div>
                         <form onSubmit={this.handleSignSubmit}>
                             Email
-                            <div className="form-group">    
+                            <div className="form-group">
                                 <input
                                     className="form-input"
                                     type="email"
@@ -98,8 +98,8 @@ class Welcome extends React.Component {
                                 />
                             </div>
 
-                            Password 
-                            <div className="form-group">    
+                            Password
+                            <div className="form-group">
                                 <input
                                     className="form-input"
                                     type="password"
@@ -111,13 +111,13 @@ class Welcome extends React.Component {
                                 />
                             </div>
 
-                             <br />
+                            <br />
                             <div className="form-group">
                                 <div className="btn-group btn-group-block">
-                                     <button className="btn btn-primary btn-block" type = "submit">Sign Up</button>
+                                    <button className="btn btn-primary btn-block" type="submit">Sign Up</button>
                                 </div>
                             </div>
-                         </form>
+                        </form>
                     </div>
 
                 </div>
