@@ -1,5 +1,7 @@
 import React from 'react';
 import './email.css';
+import Axios from 'axios';
+import { SUCCESS } from './error_codes.js';
 
 var InboxMails = []
 var SentMails = []
@@ -12,6 +14,7 @@ class Email extends React.Component {
         this.sendMail = this.sendMail.bind(this);           //forum for send a mail
         this.handleSendSubmit = this.handleSendSubmit.bind(this);   //For handling inputs to send a mail
         this.handleChange = this.handleChange.bind(this);
+        this.handleLogout = this.handleLogout.bind(this);
 
         this.state = {
             //initial mails list div 
@@ -173,6 +176,15 @@ class Email extends React.Component {
 
         
     }
+    handleLogout(e){
+        e.preventDefault();
+        Axios.get("/auth/logout").then((req) => {
+            if (req.data.code !== SUCCESS) {
+                alert(req.data.detail)
+            }
+        })
+        this.props.ask_auth();
+    }
     //For handling inputs(mail to send, subject and message) from sending mail menu
     handleChange(e) {
         this.setState({
@@ -229,11 +241,13 @@ class Email extends React.Component {
                                    </div>
                               </li>
                                <li className="divider"></li>
-                                <li className="menu-item" onClick={this.sendMail}><a href="a">Send Email</a>     
+                                    <li className="menu-item" onClick={this.sendMail}><a href="a">Send Email</a>     
                                 </li>
-                                <li className="menu-item"><a href="a">Listen Email</a>
-                                    
-                                </li>   
+                                <li className="menu-item">
+                                    <a href="a">Listen Email</a>
+                                </li> 
+                                <li className="menu-item"><a onClick={this.handleLogout} href="a">Logout</a>
+                                </li> 
                           </ul>
 
                       <div className="mailbox_div">

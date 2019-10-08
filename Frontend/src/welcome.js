@@ -40,7 +40,7 @@ class Welcome extends React.Component {
 
     handleSignSubmit(e) {
         e.preventDefault()
-        Axios.post("/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password}).then((req) => {
+        Axios.post("/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password_for_registration}).then((req) => {
             if (req.data.code === SUCCESS) {
                 alert(req.data.detail)
                 this.props.ask_auth()

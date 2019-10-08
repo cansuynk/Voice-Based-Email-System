@@ -46,7 +46,6 @@ exports.login = function(req, response) {
     const password = body["password"];
     const address = body["address"];
     const hash = computeSHA256(password);
-
     pool.query("SELECT username FROM users WHERE hash = $1 AND address = $2", [hash, address], (err, res) => {
         if (err) {
             console.log(err)
