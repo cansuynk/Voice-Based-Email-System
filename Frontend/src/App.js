@@ -1,7 +1,8 @@
 import React from 'react';
 import Welcome from "./welcome"
 import Email from "./email"
-import axios from "axios"
+import Axios from "axios"
+import {SUCCESS} from "./error_codes"
 
 class App extends React.Component {
   constructor(){
@@ -9,11 +10,24 @@ class App extends React.Component {
     this.state = { 
       auth: false
     }
+    this.check_auth = this.check_auth.bind(this);
   }
-  componentWillMount(){
-      axios.get("/auth/fetch_user").then((req) => {
-        console.log(req.data)
+  check_auth(){
+      Axios.get("/auth/fetch_user").then((req) => {
+        if (req.data.code === SUCCESS) {
+          this.setState({
+            auth: true
+          })
+        } else {
+          this.setState({
+            auth: false
+          })
+        }
       })
+  }
+
+  componentDidMount(){
+    this.check_auth()
   }
     render() {
 
@@ -67,7 +81,7 @@ class App extends React.Component {
             <div className="col-4 col-lg-3 col-md-2 col-sm-1 col-xs-0"></div>
 
             <div className="col-4 col-lg-6  col-md-8 col-sm-10 col-xs-12">
-              {this.state.auth ? <Email mailboxes={fixtures}/> : <Welcome/> }
+              {this.state.auth ? <Email mailboxes={fixtures}/> : <Welcome ask_auth={this.check_auth}/> }
             </div>
 
             <div className="col-4 col-lg-3 col-md-2 col-sm-1 col-xs-0"></div>

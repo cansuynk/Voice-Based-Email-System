@@ -15,7 +15,7 @@ class Email extends React.Component {
 
         this.state = {
             //initial mails list div 
-            mailsContent: <tr >  <td colspan="2" id="noselected_div">   
+            mailsContent: <tr ><td colSpan="2" id="noselected_div">   
                 No Folder selected.
             </td></tr>,
 
@@ -222,16 +222,16 @@ class Email extends React.Component {
 
                   <div className="menu_div">
 
-                          <ul class="menu">
-                              <li class="menu-item">
-                                  <div class="tile tile-centered">
-                                          <div class="tile-content">Menu</div>
+                          <ul className="menu">
+                              <li className="menu-item">
+                                  <div className="tile tile-centered">
+                                          <div className="tile-content">Menu</div>
                                    </div>
                               </li>
-                               <li class="divider"></li>
-                                <li class="menu-item" onClick={this.sendMail}><a href="#">Send Email</a>     
+                               <li className="divider"></li>
+                                <li className="menu-item" onClick={this.sendMail}><a href="a">Send Email</a>     
                                 </li>
-                                <li class="menu-item"><a href="#">Listen Email</a>
+                                <li className="menu-item"><a href="a">Listen Email</a>
                                     
                                 </li>   
                           </ul>
@@ -242,7 +242,7 @@ class Email extends React.Component {
 
                               <li className="item_div" key={0}>
 
-                                  <button class="btn badge" data-badge={InboxMails.length} onClick={this.inboxFunction}>
+                                  <button className="btn badge" data-badge={InboxMails.length} onClick={this.inboxFunction}>
                                       Inbox
                                    </button>
 
@@ -251,7 +251,7 @@ class Email extends React.Component {
 
                               <li className="item_div" key={1}>
 
-                                  <button class="btn badge" data-badge={SentMails.length} onClick={this.sentFunction}>
+                                  <button className="btn badge" data-badge={SentMails.length} onClick={this.sentFunction}>
                                       Sent
                                    </button>
 

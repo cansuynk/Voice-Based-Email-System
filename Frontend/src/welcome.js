@@ -1,5 +1,7 @@
 import React from 'react';
 import './welcome.css';
+import Axios from 'axios';
+import { SUCCESS } from './error_codes';
 
 
 class Welcome extends React.Component {
@@ -8,9 +10,9 @@ class Welcome extends React.Component {
         this.state = {
             email: "",
             password: "",
+            username: "",
             email_for_registration: "",
-            password_for_registration: "",
-
+            password_for_registration: ""
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -25,13 +27,27 @@ class Welcome extends React.Component {
     }
 
     handleLoginSubmit(e) {
-        alert(this.state.email) //for testing
         e.preventDefault()
+        Axios.post("/auth/login", {"address": this.state.email, "password": this.state.password}).then((req) => {
+            if (req.data.code === SUCCESS) {
+                alert(req.data.detail)
+                this.props.ask_auth()
+            } else {
+                alert(req.data.detail)
+            }
+        })
     }
 
     handleSignSubmit(e) {
-        alert(this.state.email_for_registration) //for testing
         e.preventDefault()
+        Axios.post("/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password}).then((req) => {
+            if (req.data.code === SUCCESS) {
+                alert(req.data.detail)
+                this.props.ask_auth()
+            } else {
+                alert(req.data.detail)
+            }
+        })
     }
 
     render() {
@@ -55,7 +71,7 @@ class Welcome extends React.Component {
                                     type="email" placeholder="Email"
                                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,14}$"
                                     name="email"
-                                    onInput={this.handleChange}
+                                    onChange={this.handleChange}
                                     value={this.state.email}
                                     required
                                 />
@@ -66,7 +82,7 @@ class Welcome extends React.Component {
                                     className="form-input"
                                     type="password"
                                     placeholder="Password"
-                                    onInput={this.handleChange}
+                                    onChange={this.handleChange}
                                     value={this.state.password}
                                     name="password"
                                     required
@@ -90,14 +106,25 @@ class Welcome extends React.Component {
                                     className="form-input"
                                     type="email"
                                     placeholder="Email"
-                                    onInput={this.handleChange}
+                                    onChange={this.handleChange}
                                     value={this.state.registrationmail}
                                     name="email_for_registration"
                                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,14}$"
                                     required
                                 />
                             </div>
-
+                            Username
+                            <div className="form-group">
+                                <input
+                                    className="form-input"
+                                    type=""
+                                    placeholder="Username"
+                                    onChange={this.handleChange}
+                                    value={this.state.username}
+                                    name="username"
+                                    required
+                                />
+                            </div>
                             Password
                             <div className="form-group">
                                 <input
