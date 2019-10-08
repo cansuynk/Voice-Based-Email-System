@@ -16,7 +16,7 @@ exports.fetch_emails = function(req, response) {
             rejectUnauthorized: false
             },
             tls: true
-        }), (emails) => {
+        }), req.body["search"], (emails) => {
             response.send( {
                 code: SUCCESS,
                 detail: "Success",
@@ -82,10 +82,10 @@ function write_email(options, content, callback) {
     })
 }
 
-function get_emails(imap, callback) {
+function get_emails(imap, search_str,callback) {
     var emails = []
     function openInbox(cb) {
-        imap.openBox('INBOX', true, cb);
+        imap.openBox(search_str, true, cb);
     }
       
     imap.once('ready', function() {

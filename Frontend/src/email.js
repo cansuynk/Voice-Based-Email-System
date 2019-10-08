@@ -45,7 +45,7 @@ class Email extends React.Component {
     }
 
     get_emails() {
-        Axios.get("/email/fetch_emails").then((req) => {
+        Axios.post("/email/fetch_emails", {"search": "INBOX"}).then((req) => {
             if (req.data.code === SUCCESS){
                 this.setState({
                     InboxMails: req.data.data

@@ -16,7 +16,7 @@ app.get('/api/auth/logout', logout);    // null
 app.get('/api/auth/fetch_user', fetch_user); //null
 app.get('/api/auth/delete_user', delete_user); //null
 app.post('/api/email/send_email', send_email); //send(JSON) subject, to, content
-app.get('/api/email/fetch_emails', fetch_emails); //null
+app.post('/api/email/fetch_emails', fetch_emails); //null
 
 
 app.listen(port, () => console.log(`A listening on port ${port}!`))
