@@ -1,13 +1,19 @@
 import React from 'react';
 import Welcome from "./welcome"
 import Email from "./email"
+import axios from "axios"
 
 class App extends React.Component {
   constructor(){
     super();
     this.state = { 
-      auth: true
+      auth: false
     }
+  }
+  componentWillMount(){
+      axios.get("/auth/fetch_user").then((req) => {
+        console.log(req.data)
+      })
   }
     render() {
 
@@ -36,7 +42,7 @@ class App extends React.Component {
                         from: "newsbot@tryolabs.com",
                         to: "fernando@tryolabs.com",
                         subject: "News Digest",
-                        body: "adaldmvladmvkadmvkladmvkdmvlkdmvladmvjsrýsrjfjý"
+                        body: "adaldmvladmvkadmvkladmvkdmvlkdmvladmvjsrï¿½srjfjï¿½"
                     }
                 ]
             },
