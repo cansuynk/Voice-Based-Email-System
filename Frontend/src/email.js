@@ -122,12 +122,10 @@ class Email extends React.Component {
         //This function changes the mail content div to be able to send a mail, it gives a form: "mail to send", "subject to send" and "message to send"
         this.setState({
             mailBody: 
-        
-
        <form className="form-horizontal" action="#forms" onSubmit={this.handleSendSubmit}>
             <div className="form-group">
             <div className="col-3 col-sm-12">
-                <label className="form-label" for="input-example-4"><h5>To: </h5></label>
+                <label className="form-label" htmlFor="input-example-4"><h5>To: </h5></label>
             </div>
             <div className="col-9 col-sm-12">
                             <input className="form-input" id="input-example-4"
@@ -140,7 +138,7 @@ class Email extends React.Component {
             </div>
             <div className="form-group">
             <div className="col-3 col-sm-12">
-                <label className="form-label" for="input-example-5"><h5>Subject: </h5></label>
+                <label className="form-label" htmlFor="input-example-5"><h5>Subject: </h5></label>
             </div>
             <div className="col-9 col-sm-12">
                             <input className="form-input" id="input-example-5"
@@ -153,7 +151,7 @@ class Email extends React.Component {
             
             <div className="form-group">
             <div className="col-3 col-sm-12">
-                <label className="form-label" for="input-example-6"><h5>Message: </h5></label>
+                <label className="form-label" htmlFor="input-example-6"><h5>Message: </h5></label>
             </div>
             <div className="col-9 col-sm-12">
                             <textarea className="form-input" id="input-example-6"
@@ -192,9 +190,24 @@ class Email extends React.Component {
         });
    
     }
+
     handleSendSubmit(e) {
-        alert(this.state.email_to_send + this.state.subject_to_send + this.state.message_to_send) //for testing
         e.preventDefault()
+        Axios.post("/email/send_email", {"subject": this.state.subject_to_send,
+          "to": this.state.email_to_send, "content": this.state.message_to_send}).then((req) => {
+              if (req.data.code === SUCCESS) {
+                  console.log(req)
+                  this.setState({
+                      email_to_send: "",
+                      message_to_send: "",
+                      subject_to_send: ""
+                  })
+                  alert(req.data.detail)
+              } else {
+                console.log(req)
+                alert(req.data.detail)
+              }
+          })
     }
     render() {
               
@@ -241,12 +254,12 @@ class Email extends React.Component {
                                    </div>
                               </li>
                                <li className="divider"></li>
-                                    <li className="menu-item" onClick={this.sendMail}><a href="a">Send Email</a>     
+                                    <li className="menu-item" onClick={this.sendMail}><a href="#">Send Email</a>     
                                 </li>
-                                <li className="menu-item">
-                                    <a href="a">Listen Email</a>
+                                <li  className="menu-item">
+                                    <a href="#">Listen Email</a>
                                 </li> 
-                                <li className="menu-item"><a onClick={this.handleLogout} href="a">Logout</a>
+                                <li className="menu-item"><a href="#" onClick={this.handleLogout}>Logout</a>
                                 </li> 
                           </ul>
 
