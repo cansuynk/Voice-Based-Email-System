@@ -80,6 +80,7 @@
     font-size: 12pt;
     font-weight: bold;
     border: 0.5px solid #5755d9;
+    min-width: 0;
 }
 #noselected_div {
   
