@@ -3,8 +3,7 @@ import './email.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes.js';
 
-var InboxMails = []
-var SentMails = []
+
 class Email extends React.Component {
     constructor() {
         super();
@@ -17,6 +16,9 @@ class Email extends React.Component {
         this.handleLogout = this.handleLogout.bind(this);
 
         this.state = {
+
+            InboxMails: [],
+            SentMails: [],
             //initial mails list div 
             mailsContent: <tr ><td colSpan="2" id="noselected_div">   
                 No Folder selected.
@@ -38,14 +40,25 @@ class Email extends React.Component {
         };
 }
 
- 
+    componentDidMount() {
+        this.get_emails()
+    }
+
+    get_emails() {
+        Axios.get("/email/fetch_emails").then((req) => {
+            if (req.data.code === SUCCESS){
+                this.setState({
+                    InboxMails: req.data.data
+                })
+            }
+        })
+    }
     inboxFunction() {
 
         //This function is for listing mails that are received.
-
-        const list = InboxMails.map((item) => 
+        const list = this.state.InboxMails.map((item, index) => 
      
-            <tr onClick={() => this.mailContent(item, 0)}>
+            <tr key={index} onClick={() => this.mailContent(item, 0)}>
                 <td>{item.from}</td>
                 <td>{item.subject}</td>
             </tr>
@@ -64,9 +77,9 @@ class Email extends React.Component {
 
         //This function is for listing mails that are sent.
 
-        const list = SentMails.map((item) =>
+        const list = this.state.SentMails.map((item, index) =>
 
-            <tr onClick={() => this.mailContent(item, 1)}>
+            <tr key={index} onClick={() => this.mailContent(item, 1)}>
                 <td>{item.to}</td>
                 <td>{item.subject}</td>
             </tr>
@@ -210,29 +223,6 @@ class Email extends React.Component {
           })
     }
     render() {
-              
-        InboxMails = []     //Holds inbox mails info
-        SentMails = []      //Holds sent mails info
-
-        //In this code all mails (sending and receiving) are taken as props from App.js, separates and saves mails info into arrays
-        for (var i = 0; i < this.props.mailboxes[0].emails.length; i++) { //Inbox
-            
-            InboxMails.push({
-                from: this.props.mailboxes[0].emails[i].from,
-                subject: this.props.mailboxes[0].emails[i].subject,
-                content: this.props.mailboxes[0].emails[i].body
-            })
-            
-        }
-        for (i = 0; i < this.props.mailboxes[1].emails.length; i++) { //Sent
-            SentMails.push({
-                to: this.props.mailboxes[1].emails[i].from,
-                subject: this.props.mailboxes[1].emails[i].subject,
-                content: this.props.mailboxes[1].emails[i].body
-            })
-        }
-
-
         
       return (
         
@@ -269,7 +259,7 @@ class Email extends React.Component {
 
                               <li className="item_div" key={0}>
 
-                                  <button className="btn badge" data-badge={InboxMails.length} onClick={this.inboxFunction}>
+                                  <button className="btn badge" data-badge={this.state.InboxMails.length} onClick={this.inboxFunction}>
                                       Inbox
                                    </button>
 
@@ -278,7 +268,7 @@ class Email extends React.Component {
 
                               <li className="item_div" key={1}>
 
-                                  <button className="btn badge" data-badge={SentMails.length} onClick={this.sentFunction}>
+                                  <button className="btn badge" data-badge={this.state.SentMails.length} onClick={this.sentFunction}>
                                       Sent
                                    </button>
 
