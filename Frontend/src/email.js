@@ -107,7 +107,7 @@ class Email extends React.Component {
         const content =
             <div className="mailbody_div">
                 <table>
-
+                    <tbody>
                     <tr>
                         <td><h5>{from_to} </h5></td>
                         <td> <h6>{address}</h6></td>
@@ -116,8 +116,8 @@ class Email extends React.Component {
                     <tr>
                         <td><h5>Subject:  </h5></td>
                         <td> <h6>{item.subject}</h6></td>
-                    </tr>
-                    
+                    </tr> 
+                    </tbody>
                 </table>
 
                 <hr size="10"/>
@@ -133,6 +133,7 @@ class Email extends React.Component {
     sendMail() {
 
         //This function changes the mail content div to be able to send a mail, it gives a form: "mail to send", "subject to send" and "message to send"
+
         this.setState({
             mailBody: 
        <form className="form-horizontal" action="#forms" onSubmit={this.handleSendSubmit}>
@@ -244,12 +245,12 @@ class Email extends React.Component {
                                    </div>
                               </li>
                                <li className="divider"></li>
-                                    <li className="menu-item" onClick={this.sendMail}><a href="#">Send Email</a>     
+                          <li className="menu-item" onClick={this.sendMail}><a href=" #top">Send Email</a>     
                                 </li>
                                 <li  className="menu-item">
-                                    <a href="#">Listen Email</a>
+                                    <a href="#top">Listen Email</a>
                                 </li> 
-                                <li className="menu-item"><a href="#" onClick={this.handleLogout}>Logout</a>
+                          <li className="menu-item"><a href="#top" onClick={this.handleLogout}>Logout</a>
                                 </li> 
                           </ul>
 
