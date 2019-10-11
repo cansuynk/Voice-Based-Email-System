@@ -2,6 +2,7 @@ import React from 'react';
 import './welcome.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes';
+import Speech from 'speak-tts'
 
 
 class Welcome extends React.Component {
@@ -12,12 +13,14 @@ class Welcome extends React.Component {
             password: "",
             username: "",
             email_for_registration: "",
-            password_for_registration: ""
+            password_for_registration: "",
+            speech: new Speech()
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
         this.handleSignSubmit = this.handleSignSubmit.bind(this);
+        this.Speak = this.Speak.bind(this);
     }
 
     handleChange(e) {
@@ -48,11 +51,103 @@ class Welcome extends React.Component {
         })
     }
 
+    componentDidMount() {
+        this.state.speech.init().then((data) => {
+            // The "data" object contains the list of available voices and the voice synthesis params
+            console.log("Speech is ready, voices are available", data)
+        }).catch(e => {
+            console.error("An error occured while initializing : ", e)
+        })
+        document.addEventListener('keypress', this.Speak)
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("keypress", this.Speak)
+    }
+    Speak(event) {
+       
+        if (event.keyCode === 32) {
+            
+
+            this.state.speech.speak({
+                text: 'Hello, how are you today?',
+            }).then(() => {
+                console.log("Su     ccess !")
+            }).catch(e => {
+                console.log(e)
+            })
+
+        }
+        
+
+    }
+    /*
+    Speak() {
+       
+        
+        speech.init({
+            'volume': 1,
+            'lang': 'en-GB',
+            'rate': 1,
+            'pitch': 1,
+            'voice': 'Google UK English Male',
+            'splitSentences': true,
+            'listeners': {
+                'onvoiceschanged': (voices) => {
+                    console.log("Event voiceschanged", voices)
+                }
+            }
+        })
+        
+        speech.speak({
+            text: 'Welcome To The Voice Based Email System',
+            queue: false, // current speech will be interrupted,
+            listeners: {
+                onstart: () => {
+                    console.log("Start utterance")
+                },
+                onend: () => {
+                    console.log("End utterance")
+                },
+                onresume: () => {
+                    console.log("Resume utterance")
+                },
+                onboundary: (event) => {
+                    console.log(event.name + ' boundary reached after ' + event.elapsedTime + ' milliseconds.')
+                }
+            }
+        }).then(() => {
+            console.log("Success !")
+        }).catch(e => {
+            console.error("An error occurred :", e)
+        })
+       
+
+
+    }
+ */
+
+   
+
+
     render() {
+        this.state.speech.speak({
+            text: 'Hit spacebar to listen voice assistant',
+        }).then(() => {
+            console.log("Su     ccess !")
+        }).catch(e => {
+            console.log(e)
+        })
+       
 
         return (
 
+
+
             <div className="page">
+
+                
+                    
                 <div className="logo"></div>
                 <div className="header">
                     <h2>Welcome To The Voice Based Email System</h2>
