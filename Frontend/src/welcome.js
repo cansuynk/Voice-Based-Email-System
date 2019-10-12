@@ -1,10 +1,20 @@
 import React from 'react';
+import { useEffect } from 'react';
 import './welcome.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes';
 import Speech from 'speak-tts'
+import Speech2Text from "./s2t.js";
 
 
+var synth = window.speechSynthesis
+function text2spech(text) {
+    var utterThis = new SpeechSynthesisUtterance(text);
+    synth.speak(utterThis);
+}
+
+
+var allText = []
 class Welcome extends React.Component {
     constructor() {
         super();
@@ -14,13 +24,22 @@ class Welcome extends React.Component {
             username: "",
             email_for_registration: "",
             password_for_registration: "",
-            speech: new Speech()
+            speech: new Speech(),
+            utterText: `To create a new account, please say "New account" and say your gmail address, username, and password respectively. OR
+                        To enter to your existing account, please say "log in", and say your gmail address and password. Then Say "Submit" for operation.
+                        Use the "ENTER key", to start, and end your speech.` ,
+            initial: true,
+            text: "",
+            listening: false,
+            count:0
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
         this.handleSignSubmit = this.handleSignSubmit.bind(this);
-        this.Speak = this.Speak.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+        this.handleEnd = this.handleEnd.bind(this);
+        this.handleStart = this.handleStart.bind(this);
     }
 
     handleChange(e) {
@@ -29,124 +48,123 @@ class Welcome extends React.Component {
         });
     }
 
-    handleLoginSubmit(e) {
-        e.preventDefault()
+    handleLoginSubmit() {
+        //e.preventDefault()
         Axios.post("/auth/login", {"address": this.state.email, "password": this.state.password}).then((req) => {
             if (req.data.code === SUCCESS) {
                 this.props.ask_auth()
             } else {
                 alert(req.data.detail)
+                text2spech(req.data.detail)
+
+                this.setState({
+                    email: "",
+                    password: "",
+                    email_for_registration: "",
+                    username: "",
+                    password_for_registration: ""
+
+                })
+
+                allText = []
             }
         })
     }
 
-    handleSignSubmit(e) {
-        e.preventDefault()
+    handleSignSubmit() {
+        //e.preventDefault()
         Axios.post("/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password_for_registration}).then((req) => {
             if (req.data.code === SUCCESS) {
                 this.props.ask_auth()
             } else {
                 alert(req.data.detail)
+                text2spech(req.data.detail)
+                this.setState({
+                    email: "",
+                    password: "",
+                    email_for_registration: "",
+                    username: "",
+                    password_for_registration: ""
+
+
+
+                })
+                allText = []
             }
         })
     }
 
+    handleClick(e) {
+        e.preventDefault();
+        if (e.keyCode === 32) {
+            text2spech(this.state.utterText)
+        }
+    }
+    
     componentDidMount() {
-        this.state.speech.init().then((data) => {
-            // The "data" object contains the list of available voices and the voice synthesis params
-            console.log("Speech is ready, voices are available", data)
-        }).catch(e => {
-            console.error("An error occured while initializing : ", e)
+        document.addEventListener('keypress', this.handleClick)
+
+        
+    }
+
+    handleStart() {
+        this.setState({
+            listening: true
         })
-        document.addEventListener('keypress', this.Speak)
     }
+   
+    handleEnd(err, text) {
 
-    componentWillUnmount() {
-        document.removeEventListener("keypress", this.Speak)
-    }
-    Speak(event) {
-       
-        if (event.keyCode === 32) {
-            
-
-            this.state.speech.speak({
-                text: 'Hello, how are you today?',
-            }).then(() => {
-                console.log("Su     ccess !")
-            }).catch(e => {
-                console.log(e)
+        console.log(text)
+        if (!err) {
+            this.setState({
+                text: text
             })
+        } else {
+            console.log(err)
+        }
+        this.setState({
+            listening: false
+        })
+
+        allText.push(text)
+        console.log(allText)
+
+        if (allText[allText.length - 1].toLowerCase() === "submit") {
+
+            allText[1] = allText[1].slice(0, allText[1].indexOf("atgmail.com")) + "@gmail.com"
+         
+            if (allText[0].toLowerCase().replace(/ /g, "") === "login") {
+
+                this.setState({
+                    email: allText[1].toLowerCase().replace(/ /g, ""),
+                    password: allText[2].toLowerCase(),
+
+                })
+                this.handleLoginSubmit()
+            }
+            else if (allText[0].toLowerCase().replace(/ /g, "") === "newaccount"){
+                this.setState({
+                    email_for_registration: allText[1].toLowerCase().replace(/ /g, ""),
+                    username: allText[2].toLowerCase(),
+                    password_for_registration: allText[3].toLowerCase(),
+
+                })
+                this.handleSignSubmit()
+            }
 
         }
-        
-
     }
-    /*
-    Speak() {
-       
-        
-        speech.init({
-            'volume': 1,
-            'lang': 'en-GB',
-            'rate': 1,
-            'pitch': 1,
-            'voice': 'Google UK English Male',
-            'splitSentences': true,
-            'listeners': {
-                'onvoiceschanged': (voices) => {
-                    console.log("Event voiceschanged", voices)
-                }
-            }
-        })
-        
-        speech.speak({
-            text: 'Welcome To The Voice Based Email System',
-            queue: false, // current speech will be interrupted,
-            listeners: {
-                onstart: () => {
-                    console.log("Start utterance")
-                },
-                onend: () => {
-                    console.log("End utterance")
-                },
-                onresume: () => {
-                    console.log("Resume utterance")
-                },
-                onboundary: (event) => {
-                    console.log(event.name + ' boundary reached after ' + event.elapsedTime + ' milliseconds.')
-                }
-            }
-        }).then(() => {
-            console.log("Success !")
-        }).catch(e => {
-            console.error("An error occurred :", e)
-        })
-       
-
-
-    }
- */
-
-   
-
-
+    
     render() {
-        this.state.speech.speak({
-            text: 'Hit spacebar to listen voice assistant',
-        }).then(() => {
-            console.log("Su     ccess !")
-        }).catch(e => {
-            console.log(e)
-        })
+        if (this.state.initial === true) {
+            this.state.initial = false
+            text2spech("Welcome To The Voice Based Email System. Please hit the spacebar to listen voice assistant")
+        } 
        
-
         return (
 
-
-
-            <div className="page">
-
-                
+            <div className="page">  
                     
                 <div className="logo"></div>
                 <div className="header">
@@ -155,6 +173,13 @@ class Welcome extends React.Component {
 
                 <div className="content">
                     <div className="col-sm-8 main-section">
+                       
+                        <Speech2Text  onStart={this.handleStart} onEnd={this.handleEnd} />
+                       
+  
+
+                       
+                   
 
                         <form onSubmit={this.handleLoginSubmit}>
                             Email

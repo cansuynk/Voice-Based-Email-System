@@ -2,6 +2,13 @@ import React from 'react';
 import './email.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes.js';
+import Speech2Text from "./s2t.js";
+
+var synth = window.speechSynthesis
+function text2spech(text) {
+    var utterThis = new SpeechSynthesisUtterance(text);
+    synth.speak(utterThis);
+}
 
 
 class Email extends React.Component {
@@ -14,6 +21,9 @@ class Email extends React.Component {
         this.handleSendSubmit = this.handleSendSubmit.bind(this);   //For handling inputs to send a mail
         this.handleChange = this.handleChange.bind(this);
         this.handleLogout = this.handleLogout.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+        this.handleEnd = this.handleEnd.bind(this);
+        this.handleStart = this.handleStart.bind(this);
 
         this.state = {
 
@@ -34,8 +44,10 @@ class Email extends React.Component {
 
             email_to_send: "",  //this states are for saving sending mail info
             subject_to_send: "",
-            message_to_send: ""
+            message_to_send: "",
 
+            utterText: " To Send Email, please say Send. To Listen Email, say Listen. and To Exit, say Logout",
+            initial: true
 
         };
 }
@@ -223,7 +235,49 @@ class Email extends React.Component {
               }
           })
     }
+
+    handleClick(e) {
+        e.preventDefault();
+        if (e.keyCode === 32) {
+            text2spech(this.state.utterText)
+        }
+    }
+
+    componentDidMount() {
+        document.addEventListener('keypress', this.handleClick)
+
+
+    }
+
+    handleStart() {
+        this.setState({
+            listening: true
+        })
+    }
+
+    handleEnd(err, text) {
+
+        console.log(text)
+        if (!err) {
+            this.setState({
+                text: text
+            })
+        } else {
+            console.log(err)
+        }
+        this.setState({
+            listening: false
+        })
+
+    }
+
     render() {
+
+        if (this.state.initial === true) {
+            this.state.initial = false
+            text2spech("Login successful")
+            text2spech("To Listen to menu, please hit the spacebar")
+        } 
         
       return (
         
