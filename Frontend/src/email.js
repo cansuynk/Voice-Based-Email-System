@@ -1,3 +1,4 @@
+// eslint-disable-no-redeclare
 import React from 'react';
 import './email.css';
 import Axios from 'axios';
@@ -234,6 +235,8 @@ class Email extends React.Component {
             if (req.data.code !== SUCCESS) {
                 alert(req.data.detail)
             }
+            this.text2speech("Log out succesfull")
+            
         })
         this.props.ask_auth();
     }
@@ -290,7 +293,7 @@ class Email extends React.Component {
             })
 
         } else {
-            console.log(err)
+            return;
         }
         this.setState({
             listening: false
@@ -483,7 +486,7 @@ class Email extends React.Component {
 
             }
                 //bo�
-            else if (allText[allText.length - 1].toLowerCase() === "sent") {
+            else if (allText[allText.length - 1].toLowerCase() === "sent" || allText[allText.length - 1].toLowerCase() === "send") {
                 this.sentFunction()
                 var speech = "You have " + this.state.SentMails.length + "  emails."
 

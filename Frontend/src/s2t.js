@@ -8,11 +8,25 @@ recognition.continous = true
 recognition.interimResults = false
 recognition.lang = 'en-US'
 
+var a=new AudioContext() // browsers limit the number of concurrent audio contexts, so you better re-use'em
+function beep(vol, freq, duration){
+ var v=a.createOscillator()
+ var u=a.createGain()
+  v.connect(u)
+  v.frequency.value=freq
+  v.type="square"
+  u.connect(a.destination)
+  u.gain.value=vol*0.01
+  v.start(a.currentTime)
+  v.stop(a.currentTime+duration*0.001)
+}
+
 class Speech2Text extends React.Component {
   constructor() {
     super()
     this.state = {
       listening: false,
+      started: false,
       text: ""
     }
     this.toggleListen = this.toggleListen.bind(this)
@@ -30,6 +44,11 @@ class Speech2Text extends React.Component {
 
   toggleListen(event) {
     if (event.keyCode ===  27) {
+      if (!this.state.listening) {
+        beep(20,100,150) //Listen Start Noise
+      } else {
+        beep(20,200,150) //Listen Start Noise
+      }
       this.setState({
         listening: !this.state.listening
       }, this.handleListen)
@@ -39,15 +58,19 @@ class Speech2Text extends React.Component {
  
   handleListen(){
     if (this.state.listening) {
-      recognition.start()
-      this.props.onStart()
-      recognition.onend = () => {
-        console.log("...continue listening...")
+      if (!this.state.started) {
         recognition.start()
+        this.setState({started: true})
+        this.props.onStart()
+        recognition.onend = () => {
+          console.log("...continue listening...")
+          recognition.start()
+        }
       }
     } else {
       recognition.stop()
       recognition.onend = () => {
+        this.setState({started: false})
         console.log("Stopped Listening per click")
       }
     }
@@ -69,7 +92,8 @@ class Speech2Text extends React.Component {
     }
   }
   render() {
-    return (<div></div>);
+    return (<div>
+    </div>);
   }
   
 }
