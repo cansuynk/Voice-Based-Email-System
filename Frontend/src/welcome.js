@@ -1,9 +1,7 @@
 import React from 'react';
-import { useEffect } from 'react';
 import './welcome.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes';
-import Speech from 'speak-tts'
 import Speech2Text from "./s2t.js";
 
 
@@ -24,10 +22,6 @@ class Welcome extends React.Component {
             username: "",
             email_for_registration: "",
             password_for_registration: "",
-            speech: new Speech(),
-            utterText: `To create a new account, please say "New account" and say your gmail address, username, and password respectively. OR
-                        To enter to your existing account, please say "log in", and say your gmail address and password. Then Say "Submit" for operation.
-                        Use the "ENTER key", to start, and end your speech.` ,
             initial: true,
             text: "",
             listening: false,
@@ -48,8 +42,10 @@ class Welcome extends React.Component {
         });
     }
 
-    handleLoginSubmit() {
-        //e.preventDefault()
+    handleLoginSubmit(e) {
+        if (e) {
+            e.preventDefault();
+        }
         Axios.post("/auth/login", {"address": this.state.email, "password": this.state.password}).then((req) => {
             if (req.data.code === SUCCESS) {
                 this.props.ask_auth()
@@ -71,8 +67,10 @@ class Welcome extends React.Component {
         })
     }
 
-    handleSignSubmit() {
-        //e.preventDefault()
+    handleSignSubmit(e) {
+        if (e){
+            e.preventDefault();
+        }
         Axios.post("/auth/sign_in", {"address": this.state.email_for_registration,"username": this.state.username ,"password": this.state.password_for_registration}).then((req) => {
             if (req.data.code === SUCCESS) {
                 this.props.ask_auth()
@@ -95,9 +93,11 @@ class Welcome extends React.Component {
     }
 
     handleClick(e) {
-        e.preventDefault();
+        //e.preventDefault();
         if (e.keyCode === 32) {
-            text2spech(this.state.utterText)
+            text2spech(`To create a new account, please say "New account" and say your gmail address, username, and password respectively. OR
+            To enter to your existing account, please say "log in", and say your gmail address and password. Then Say "Submit" for operation.
+            Use the "ENTER key", to start, and end your speech. You can say "restart" to start over.`)
         }
     }
     
@@ -117,6 +117,10 @@ class Welcome extends React.Component {
 
         console.log(text)
         if (!err) {
+            if (text.toLowerCase().replace(/ /g, "") === "restart") {
+                allText = []
+                return;
+            }
             this.setState({
                 text: text
             })
@@ -141,7 +145,7 @@ class Welcome extends React.Component {
                     password: allText[2].toLowerCase(),
 
                 })
-                this.handleLoginSubmit()
+                this.handleLoginSubmit(null);
             }
             else if (allText[0].toLowerCase().replace(/ /g, "") === "newaccount"){
                 this.setState({
@@ -150,7 +154,7 @@ class Welcome extends React.Component {
                     password_for_registration: allText[3].toLowerCase(),
 
                 })
-                this.handleSignSubmit()
+                this.handleSignSubmit(null);
             }
 
         }
@@ -158,7 +162,9 @@ class Welcome extends React.Component {
     
     render() {
         if (this.state.initial === true) {
-            this.state.initial = false
+            this.setState({
+                initial: false
+            })
             text2spech("Welcome To The Voice Based Email System. Please hit the spacebar to listen voice assistant")
         } 
        
