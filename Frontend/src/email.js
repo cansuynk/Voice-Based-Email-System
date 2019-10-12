@@ -10,7 +10,8 @@ function text2spech(text) {
     synth.speak(utterThis);
 }
 
-
+var allText = []
+var sendingInfo = []
 class Email extends React.Component {
     constructor() {
         super();
@@ -49,7 +50,10 @@ class Email extends React.Component {
             message_to_send: "",
 
             utterText: " To Send Email, please say Send. To Listen Email, say Listen. and To Exit, say Logout",
-            initial: true
+            initial: true,
+            sendEmail: false,
+            inboxEmail: false,
+            sentEmail: false,
 
         };
 }
@@ -170,7 +174,7 @@ class Email extends React.Component {
                 <label className="form-label" htmlFor="input-example-4"><h5>To: </h5></label>
             </div>
             <div className="col-9 col-sm-12">
-                            <input className="form-input" id="input-example-4"
+                            <input className="form-input" id="address"
                                 type="email"
                                 placeholder="Email"
                                 name="email_to_send"
@@ -183,7 +187,7 @@ class Email extends React.Component {
                 <label className="form-label" htmlFor="input-example-5"><h5>Subject: </h5></label>
             </div>
             <div className="col-9 col-sm-12">
-                            <input className="form-input" id="input-example-5"
+                            <input className="form-input" id="subject"
                                 type="subject"
                                 placeholder="Subject"
                                 name="subject_to_send"
@@ -196,7 +200,7 @@ class Email extends React.Component {
                 <label className="form-label" htmlFor="input-example-6"><h5>Message: </h5></label>
             </div>
             <div className="col-9 col-sm-12">
-                            <textarea className="form-input" id="input-example-6"
+                            <textarea className="form-input" id="message"
                                 placeholder="Textarea"
                                 rows="3"
                                 name="message_to_send"
@@ -279,6 +283,164 @@ class Email extends React.Component {
         this.setState({
             listening: false
         })
+        if (this.state.inboxEmail === true) { //inboxdan istediði maili sesli aldýðýmýz için menudeki seslerle karýþmamasý adýna burada ayrý aldým söylenenleri
+
+          
+
+            var option = text //söylediði þey 
+
+            console.log(option)
+
+            if (option.toLowerCase() === "menu") {  //menu derse geri dönüyor menudeki seçeneklere
+                option = ""
+                this.setState({
+                    inboxEmail: false,
+                    text: ""
+                })
+                text2spech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+            }
+            else if (option.toLowerCase() === "restart") {  //restart derse tekrar söylüyor mailleri ama garip söylüyor deðiþtirmek lazým
+                option = ""
+                text2spech("You have " + this.state.InboxMails.length + "emails.")
+
+                const list = this.state.InboxMails.map((item, index) =>
+                    text2spech("From " + item.from + "Subject" + item.subject)
+                );
+                text2spech("Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
+            }
+            else {
+                console.log(option)
+                
+            }
+        }
+        //boþ
+        else if (this.state.sentEmail === true) {
+
+
+        }
+        else if (this.state.sendEmail === true) {  //söylenenleri ayýrabilmek için yazdým
+            sendingInfo.push(text)  //bu arrayde tutucak tüm söylenenleri tek tek
+            console.log(sendingInfo)
+
+            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "send") {  //email, konu ve içeriði yazdýktan sonra bunun içine girip alýcak teker teker
+
+                //sendingInfo[0] = sendingInfo[0].replace(/ /g, "").slice(0, sendingInfo[0].indexOf("atgmail.com")) + "@gmail.com"
+
+                sendingInfo[0] = "mail.system.test123@gmail.com"  //email kýsmýna bunu direk koydurdum, anlamýyor çünkü
+
+                //Bunlar mail yollama kýsmýndaki inputlarý dolduruyor
+                this.setState({
+                    email_to_send: sendingInfo[0],
+                    subject_to_send: sendingInfo[1].toLowerCase(),
+                    message_to_send: sendingInfo[2].toLowerCase(),
+                })
+
+                document.getElementById("address").value = this.state.email_to_send
+                document.getElementById("subject").value = this.state.subject_to_send
+                document.getElementById("message").value = this.state.message_to_send
+
+                //yazýlanlarý teyit etmek için tekrarlýyor adam correct derse asýl yollama iþlemi olcak
+                text2spech("If these sending information are correct, please say correct, if not please say restart to start over.")
+                text2spech("To:" + this.state.email_to_send)
+                text2spech("Subject:" + this.state.subject_to_send)
+                text2spech("Message:" + this.state.message_to_send)
+
+            }
+            //menu derse menuyü tekrar söylüyor ve mail yollama bölümünden çýkýyor.
+            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "menu") {
+                sendingInfo = []
+                this.setState({
+                    sendEmail: false,
+                    text: ""
+                })
+                text2spech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+
+
+            }
+            //restart derse ne söylemesi gerektiði bilgisini veriyor
+            else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "restart") {
+                sendingInfo = []
+                text2spech("Say address, subject, and message")
+            }
+            //correct derse mail yollama iþlemi olcak ve inputlarýn içini sýfýrlýyor
+            else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "correct") {
+                sendingInfo = []
+                text2spech("Your email is sent successfully")
+                this.handleSendSubmit(null)
+
+                this.setState({
+                    email_to_send: "",
+                    subject_to_send: "",
+                    message_to_send: "",
+                })
+
+                document.getElementById("address").value = this.state.email_to_send
+                document.getElementById("subject").value = this.state.subject_to_send
+                document.getElementById("message").value = this.state.message_to_send
+                text2spech("say menu to return to menu or for new email say address, subject, and message and send to sent email")
+            }
+
+        }
+
+        else {
+            //bu else menuden seçilenleri arraya kaydediyor
+            allText.push(this.state.text)
+            console.log(allText)
+            //send mail derse mail yollama bölümünü getiriyor ve o bölümdeki söylenenleri ayrý almasý için yukardaki ife yazdým
+            if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "sendemail") {
+                console.log("send")
+                this.sendMail()
+
+                text2spech(`Please say the address to send email, subject, and the message respectively. Say send to send the email.
+                say restart to start over or say menu to return to menu`)
+
+                this.setState({
+                    sendEmail: true
+                })
+                allText = []
+            }
+            else if (allText[allText.length - 1].toLowerCase() === "listen") {
+                text2spech("To listen to Inbox emails, say inbox, To listen to Sent emails, say sent.  You can say restart to start over.")
+            }
+            else if (allText[allText.length - 1].toLowerCase() === "logout") {
+                console.log("logout")
+                this.handleLogout(null)
+            }
+            else if (allText[allText.length - 1].toLowerCase() === "restart") {
+                text2spech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+                allText = []
+            }
+            //adam inbox derse inboxdaki mailleri ekrana getiriyor kaç maili var söylüyor
+            else if (allText[allText.length - 1].toLowerCase() === "inbox") {
+                this.inboxFunction()
+                text2spech("You have " + this.state.InboxMails.length + "emails.")
+
+                const list = this.state.InboxMails.map((item, index) =>
+                    text2spech("From " + item.from + "Subject" + item.subject)
+                );
+                text2spech("Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
+                //þu kýsýmda kafayý yedim deðiþtirebilirsin
+
+                //burdaki söyledikleri menudeki arrayle karýþmasýn diye ayrý yerde saklamak için bir flag, yukarýdaki "if" yapýlýyor
+                this.setState({
+                    inboxEmail: true
+                })
+
+                allText = []
+
+            }
+                //boþ
+            else if (allText[allText.length - 1].toLowerCase() === "sent") {
+                this.sentFunction()
+            }
+            //menude olmayan bir þey derse yanlýþ opsiyon
+            else {
+                text2spech("Wrong Option, please say again")
+                allText = []
+            }
+
+        }
+
 
     }
 
@@ -296,7 +458,7 @@ class Email extends React.Component {
         
           //Layout: "main div=> app_div(has all subdivs)", "header div", "menu div(left side)", "mails list div" and "mail content div"
           <div className="flex-centered">
-              
+              <Speech2Text onStart={this.handleStart} onEnd={this.handleEnd} />
               <div className="app_div">
 
                   <div className="header_section">
