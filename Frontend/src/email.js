@@ -56,6 +56,7 @@ class Email extends React.Component {
 
     componentDidMount() {
         this.get_emails();
+        this.get_emails_sent();
         document.addEventListener('keypress', this.handleClick)
     }
 
@@ -70,23 +71,23 @@ class Email extends React.Component {
         })
     }
 
-    /*
+    
     get_emails_sent() {
         Axios.post("/email/fetch_emails", {"search": "SENT"}).then((req) => {
             if (req.data.code === SUCCESS){
                 this.setState({
-                    InboxMails: req.data.data
+                    SentMails: req.data.data
                 })
             }
         })
     }
-    */
+    
     inboxFunction() {
         //This function is for listing mails that are received.
         const list = this.state.InboxMails.map((item, index) => 
      
             <tr key={index} onClick={() => this.mailContent(item, 0)}>
-                <td>{item.from}</td>
+                <td>{item.target}</td>
                 <td>{item.subject}</td>
             </tr>
             
@@ -107,7 +108,7 @@ class Email extends React.Component {
         const list = this.state.SentMails.map((item, index) =>
 
             <tr key={index} onClick={() => this.mailContent(item, 1)}>
-                <td>{item.to}</td>
+                <td>{item.target}</td>
                 <td>{item.subject}</td>
             </tr>
 
@@ -125,10 +126,10 @@ class Email extends React.Component {
         //This function is for displaying the content of the selected mail
 
         var from_to = "From: "  //If a received mail is wanted to display, it changes the header of the table
-        var address = item.from
+        var address = item.target
         if (id === 1) {
             from_to = "To: "    //If a sent mail is wanted to display
-            address = item.to
+            address = item.target
         }
             
         const content =
@@ -252,7 +253,7 @@ class Email extends React.Component {
     }
 
     handleClick(e) {
-        e.preventDefault();
+        //e.preventDefault();
         if (e.keyCode === 32) {
             text2spech(this.state.utterText)
         }
@@ -284,7 +285,9 @@ class Email extends React.Component {
     render() {
 
         if (this.state.initial === true) {
-            this.state.initial = false
+            this.setState({
+                initial: false
+            })
             text2spech("Login successful")
             text2spech("To Listen to menu, please hit the spacebar")
         } 

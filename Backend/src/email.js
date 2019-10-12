@@ -2,6 +2,7 @@
 var Imap = require('imap'),
 inspect = require('util').inspect; 
 const Gmail = require('gmail-send');
+const simpleParser = require('mailparser').simpleParser;
 const {SUCCESS, NOT_AUTH, UNEXPECTED} = require("./error_codes.js");
 
 
@@ -84,12 +85,27 @@ function write_email(options, content, callback) {
 
 function get_emails(imap, search_str,callback) {
     var emails = []
-    function openInbox(cb) {
-        imap.openBox(search_str, true, cb);
+    function openBox(cb) {
+        imap.getBoxes((err, boxes) => {
+            console.log(boxes);
+            if (search_str === "SENT") {
+                var objs = boxes["[Gmail]"].children
+                for (let key of Object.keys(objs)) {
+                    if (objs[key].attribs[1] === "\\Sent") {
+                        console.log("[Gmail]/" + key.trim(), ":",objs[key].attribs[1])
+                        imap.openBox("[Gmail]/" + key.trim(), true, cb);
+                    }
+    
+                }
+            } else {
+                imap.openBox("INBOX", true, cb);
+            }
+        })
+        
     }
       
     imap.once('ready', function() {
-    openInbox(function(err, box) {
+    openBox(function(err, box) {
     if (err) throw err;
 
     imap.search(['ALL'], function(err, results) { 
@@ -108,15 +124,22 @@ function get_emails(imap, search_str,callback) {
             });
 
             stream.on("end", function () {
-                var mail = Buffer.concat(chunks).toString()
-                mail = mail.substring(mail.indexOf('From: '))
-                const from = mail.substring(mail.indexOf('<') + 1, mail.indexOf('>'));
-                const subject = mail.substring(mail.indexOf('Subject:') + 9, mail.indexOf('To:') - 2);
-                const content = mail.substring(mail.indexOf('text/plain') + 31 , mail.indexOf('text/html') - 50);
-                emails.push({
-                    from: from,
-                    subject: subject,
-                    content: content
+                simpleParser(Buffer.concat(chunks).toString(), (err, mail) => {
+                    var target, subject, content;
+                    if (search_str === "INBOX") {
+                        target = mail.from.text;
+                        subject = mail.subject;
+                        content = mail.text;
+                    } else {
+                        target = mail.to.text;
+                        subject = mail.subject;
+                        content = mail.text;
+                    }
+                    emails.push({
+                        target: target,
+                        subject: subject,
+                        content: content
+                    })
                 })
             });
         });
