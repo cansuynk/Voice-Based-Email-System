@@ -5,11 +5,6 @@ import { SUCCESS } from './error_codes.js';
 import Speech2Text from "./s2t.js";
 
 var synth = window.speechSynthesis
-function text2spech(text) {
-    var utterThis = new SpeechSynthesisUtterance(text);
-    synth.speak(utterThis);
-}
-
 var allText = []
 var sendingInfo = []
 class Email extends React.Component {
@@ -26,7 +21,7 @@ class Email extends React.Component {
         this.handleEnd = this.handleEnd.bind(this);
         this.handleStart = this.handleStart.bind(this);
         this.get_emails = this.get_emails.bind(this);
-        //this.get_emails_sent = this.get_emails_sent.bind(this);
+        this.get_emails_sent = this.get_emails_sent.bind(this);
 
         this.state = {
 
@@ -49,7 +44,7 @@ class Email extends React.Component {
             subject_to_send: "",
             message_to_send: "",
 
-            utterText: " To Send Email, please say Send. To Listen Email, say Listen. and To Exit, say Logout",
+            utterText: " To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout",
             initial: true,
             sendEmail: false,
             inboxEmail: false,
@@ -58,10 +53,21 @@ class Email extends React.Component {
         };
 }
 
+    text2speech = (text) => {
+        synth.cancel()
+        var utterThis = new SpeechSynthesisUtterance(text);
+        synth.speak(utterThis);
+    }
+
     componentDidMount() {
         this.get_emails();
         this.get_emails_sent();
         document.addEventListener('keypress', this.handleClick)
+    }
+
+    componentWillUnmount() {
+        synth.cancel()
+        document.removeEventListener('keypress', this.handleClick)
     }
 
 
@@ -221,7 +227,9 @@ class Email extends React.Component {
         
     }
     handleLogout(e){
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
         Axios.get("/auth/logout").then((req) => {
             if (req.data.code !== SUCCESS) {
                 alert(req.data.detail)
@@ -238,7 +246,9 @@ class Email extends React.Component {
     }
 
     handleSendSubmit(e) {
-        e.preventDefault()
+        if (e) {
+            e.preventDefault()
+        }
         Axios.post("/email/send_email", {"subject": this.state.subject_to_send,
           "to": this.state.email_to_send, "content": this.state.message_to_send}).then((req) => {
               if (req.data.code === SUCCESS) {
@@ -259,7 +269,7 @@ class Email extends React.Component {
     handleClick(e) {
         //e.preventDefault();
         if (e.keyCode === 32) {
-            text2spech(this.state.utterText)
+            this.text2speech(this.state.utterText)
         }
     }
 
@@ -268,6 +278,7 @@ class Email extends React.Component {
         this.setState({
             listening: true
         })
+        synth.cancel(); 
     }
 
     handleEnd(err, text) {
@@ -277,58 +288,97 @@ class Email extends React.Component {
             this.setState({
                 text: text
             })
+
         } else {
             console.log(err)
         }
         this.setState({
             listening: false
         })
-        if (this.state.inboxEmail === true) { //inboxdan istediði maili sesli aldýðýmýz için menudeki seslerle karýþmamasý adýna burada ayrý aldým söylenenleri
+        if (this.state.inboxEmail === true) { //inboxdan istediï¿½i maili sesli aldï¿½ï¿½ï¿½mï¿½z iï¿½in menudeki seslerle karï¿½ï¿½mamasï¿½ adï¿½na burada ayrï¿½ aldï¿½m sï¿½ylenenleri
 
           
 
-            var option = text //söylediði þey 
+            var option = text //sï¿½ylediï¿½i ï¿½ey 
 
             console.log(option)
 
-            if (option.toLowerCase() === "menu") {  //menu derse geri dönüyor menudeki seçeneklere
+            if (option.toLowerCase() === "menu") {  //menu derse geri dï¿½nï¿½yor menudeki seï¿½eneklere
                 option = ""
                 this.setState({
                     inboxEmail: false,
                     text: ""
                 })
-                text2spech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
             }
-            else if (option.toLowerCase() === "restart") {  //restart derse tekrar söylüyor mailleri ama garip söylüyor deðiþtirmek lazým
+            else if (option.toLowerCase() === "restart") {  //restart derse tekrar sï¿½ylï¿½yor mailleri ama garip sï¿½ylï¿½yor deï¿½iï¿½tirmek lazï¿½m
                 option = ""
-                text2spech("You have " + this.state.InboxMails.length + "emails.")
+                var speech = "You have " + this.state.InboxMails.length + "  emails."
 
-                const list = this.state.InboxMails.map((item, index) =>
-                    text2spech("From " + item.from + "Subject" + item.subject)
-                );
-                text2spech("Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
+                this.state.InboxMails.map((item) => {
+                    speech = speech + "! . ! From " + item.target + "! . ! Subject " + item.subject
+                }) 
+
+                this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
             }
             else {
-                console.log(option)
-                
+                if(!isNaN(option)) {
+                    var mail = this.state.InboxMails[parseInt(option)  - 1]
+                    this.mailContent(mail, 0);
+                    this.text2speech("From: " + mail.target + "! . ! Subject:" + mail.subject + "! . ! Content:"  + mail.content);
+                } else {
+                    this.text2speech("I couldn't get that!");
+                } 
             }
         }
-        //boþ
+        //boï¿½
         else if (this.state.sentEmail === true) {
+            var option = text 
+
+            console.log(option)
+
+            if (option.toLowerCase() === "menu") {  //menu derse geri dï¿½nï¿½yor menudeki seï¿½eneklere
+                option = ""
+                this.setState({
+                    sentEmail: false,
+                    text: ""
+                })
+                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+            }
+            else if (option.toLowerCase() === "restart") {  //restart derse tekrar sï¿½ylï¿½yor mailleri ama garip sï¿½ylï¿½yor deï¿½iï¿½tirmek lazï¿½m
+                option = ""
+                var speech = "You have " + this.state.SentMails.length + "  emails."
+
+                this.state.SentMails.map((item) => {
+                    speech = speech + "! . ! To " + item.target + "! . ! Subject " + item.subject
+                }) 
+
+                this.text2speech(speech + "! . ! Say the index of email to listen. menu to return menu and restart to listen list of emails ")
+            }
+            else {
+                if(!isNaN(option)) {
+                    var mail = this.state.SentMails[parseInt(option)  - 1]
+                    this.mailContent(mail, 0);
+                    this.text2speech("From: " + mail.target + "! . ! Subject:" + mail.subject + "! . ! Content:"  + mail.content);
+                } else {
+                    this.text2speech("I couldn't get that!");
+                }
+                
+            }
 
 
         }
-        else if (this.state.sendEmail === true) {  //söylenenleri ayýrabilmek için yazdým
-            sendingInfo.push(text)  //bu arrayde tutucak tüm söylenenleri tek tek
+        else if (this.state.sendEmail === true) {  //sï¿½ylenenleri ayï¿½rabilmek iï¿½in yazdï¿½m
+            sendingInfo.push(text)  //bu arrayde tutucak tï¿½m sï¿½ylenenleri tek tek
             console.log(sendingInfo)
 
-            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "send") {  //email, konu ve içeriði yazdýktan sonra bunun içine girip alýcak teker teker
+            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "send") {  //email, konu ve iï¿½eriï¿½i yazdï¿½ktan sonra bunun iï¿½ine girip alï¿½cak teker teker
 
                 //sendingInfo[0] = sendingInfo[0].replace(/ /g, "").slice(0, sendingInfo[0].indexOf("atgmail.com")) + "@gmail.com"
 
-                sendingInfo[0] = "mail.system.test123@gmail.com"  //email kýsmýna bunu direk koydurdum, anlamýyor çünkü
+                sendingInfo[0] = "mail.system.test123@gmail.com"  //email kï¿½smï¿½na bunu direk koydurdum, anlamï¿½yor ï¿½ï¿½nkï¿½
 
-                //Bunlar mail yollama kýsmýndaki inputlarý dolduruyor
+                //Bunlar mail yollama kï¿½smï¿½ndaki inputlarï¿½ dolduruyor
                 this.setState({
                     email_to_send: sendingInfo[0],
                     subject_to_send: sendingInfo[1].toLowerCase(),
@@ -339,33 +389,31 @@ class Email extends React.Component {
                 document.getElementById("subject").value = this.state.subject_to_send
                 document.getElementById("message").value = this.state.message_to_send
 
-                //yazýlanlarý teyit etmek için tekrarlýyor adam correct derse asýl yollama iþlemi olcak
-                text2spech("If these sending information are correct, please say correct, if not please say restart to start over.")
-                text2spech("To:" + this.state.email_to_send)
-                text2spech("Subject:" + this.state.subject_to_send)
-                text2spech("Message:" + this.state.message_to_send)
+                //yazï¿½lanlarï¿½ teyit etmek iï¿½in tekrarlï¿½yor adam correct derse asï¿½l yollama iï¿½lemi olcak
+                this.text2speech("If these sending information are correct, please say correct, if not please say restart to start over." 
+                + "! . !To:" + this.state.email_to_send + "! . !Subject:" + this.state.subject_to_send + "! . !Message:" + this.state.message_to_send)
 
             }
-            //menu derse menuyü tekrar söylüyor ve mail yollama bölümünden çýkýyor.
+            //menu derse menuyï¿½ tekrar sï¿½ylï¿½yor ve mail yollama bï¿½lï¿½mï¿½nden ï¿½ï¿½kï¿½yor.
             if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "menu") {
                 sendingInfo = []
                 this.setState({
                     sendEmail: false,
                     text: ""
                 })
-                text2spech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
 
 
             }
-            //restart derse ne söylemesi gerektiði bilgisini veriyor
+            //restart derse ne sï¿½ylemesi gerektiï¿½i bilgisini veriyor
             else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "restart") {
                 sendingInfo = []
-                text2spech("Say address, subject, and message")
+                this.text2speech("Say address, subject, and message")
             }
-            //correct derse mail yollama iþlemi olcak ve inputlarýn içini sýfýrlýyor
+            //correct derse mail yollama iï¿½lemi olcak ve inputlarï¿½n iï¿½ini sï¿½fï¿½rlï¿½yor
             else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "correct") {
                 sendingInfo = []
-                text2spech("Your email is sent successfully")
+                this.text2speech()
                 this.handleSendSubmit(null)
 
                 this.setState({
@@ -377,65 +425,82 @@ class Email extends React.Component {
                 document.getElementById("address").value = this.state.email_to_send
                 document.getElementById("subject").value = this.state.subject_to_send
                 document.getElementById("message").value = this.state.message_to_send
-                text2spech("say menu to return to menu or for new email say address, subject, and message and send to sent email")
+                this.text2speech("Your email is sent successfully ! . !" + "say menu to return to menu or for new email say address, subject, and message and send to sent email")
             }
 
         }
 
         else {
-            //bu else menuden seçilenleri arraya kaydediyor
+            //bu else menuden seï¿½ilenleri arraya kaydediyor
             allText.push(this.state.text)
             console.log(allText)
-            //send mail derse mail yollama bölümünü getiriyor ve o bölümdeki söylenenleri ayrý almasý için yukardaki ife yazdým
+            //send mail derse mail yollama bï¿½lï¿½mï¿½nï¿½ getiriyor ve o bï¿½lï¿½mdeki sï¿½ylenenleri ayrï¿½ almasï¿½ iï¿½in yukardaki ife yazdï¿½m
             if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "sendemail") {
                 console.log("send")
                 this.sendMail()
 
-                text2spech(`Please say the address to send email, subject, and the message respectively. Say send to send the email.
+                this.text2speech(`Please say the address to send email, subject, and the message respectively. Say send to send the email.
                 say restart to start over or say menu to return to menu`)
 
                 this.setState({
-                    sendEmail: true
+                    sendEmail: true,
+                    sentEmail: false,
+                    inboxEmail: false
                 })
                 allText = []
             }
             else if (allText[allText.length - 1].toLowerCase() === "listen") {
-                text2spech("To listen to Inbox emails, say inbox, To listen to Sent emails, say sent.  You can say restart to start over.")
+                this.text2speech("To listen to Inbox emails, say inbox, To listen to Sent emails, say sent.  You can say restart to start over.")
             }
-            else if (allText[allText.length - 1].toLowerCase() === "logout") {
+            else if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "logout") {
                 console.log("logout")
                 this.handleLogout(null)
             }
             else if (allText[allText.length - 1].toLowerCase() === "restart") {
-                text2spech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
+                this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
                 allText = []
             }
-            //adam inbox derse inboxdaki mailleri ekrana getiriyor kaç maili var söylüyor
+            //adam inbox derse inboxdaki mailleri ekrana getiriyor kaï¿½ maili var sï¿½ylï¿½yor
             else if (allText[allText.length - 1].toLowerCase() === "inbox") {
                 this.inboxFunction()
-                text2spech("You have " + this.state.InboxMails.length + "emails.")
+                var speech = "You have " + this.state.InboxMails.length + "  emails."
 
-                const list = this.state.InboxMails.map((item, index) =>
-                    text2spech("From " + item.from + "Subject" + item.subject)
-                );
-                text2spech("Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
-                //þu kýsýmda kafayý yedim deðiþtirebilirsin
+                const list = this.state.InboxMails.map((item, index) => {
+                    speech = speech + "! . ! From " + item.target + "! . ! Subject " + item.subject
+                }) 
 
-                //burdaki söyledikleri menudeki arrayle karýþmasýn diye ayrý yerde saklamak için bir flag, yukarýdaki "if" yapýlýyor
+                this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
+                //ï¿½u kï¿½sï¿½mda kafayï¿½ yedim deï¿½iï¿½tirebilirsin
+
+                //burdaki sï¿½yledikleri menudeki arrayle karï¿½ï¿½masï¿½n diye ayrï¿½ yerde saklamak iï¿½in bir flag, yukarï¿½daki "if" yapï¿½lï¿½yor
                 this.setState({
+                    sendEmail: false,
+                    sentEmail: false,
                     inboxEmail: true
                 })
 
                 allText = []
 
             }
-                //boþ
+                //boï¿½
             else if (allText[allText.length - 1].toLowerCase() === "sent") {
                 this.sentFunction()
+                var speech = "You have " + this.state.SentMails.length + "  emails."
+
+                const list = this.state.SentMails.map((item, index) => {
+                    speech = speech + "! . ! From " + item.target + "! . ! Subject " + item.subject
+                }) 
+
+                this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
+                this.setState({
+                    sendEmail: false,
+                    sentEmail: true,
+                    inboxEmail: false
+                })
             }
-            //menude olmayan bir þey derse yanlýþ opsiyon
+            //menude olmayan bir ï¿½ey derse yanlï¿½ï¿½ opsiyon
             else {
-                text2spech("Wrong Option, please say again")
+                this.text2speech("Wrong Option, please say again")
                 allText = []
             }
 
@@ -450,8 +515,8 @@ class Email extends React.Component {
             this.setState({
                 initial: false
             })
-            text2spech("Login successful")
-            text2spech("To Listen to menu, please hit the spacebar")
+            this.text2speech("Login successful")
+            this.text2speech("To Listen to menu, please hit the spacebar")
         } 
         
       return (

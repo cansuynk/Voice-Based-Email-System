@@ -5,13 +5,8 @@ import { SUCCESS } from './error_codes';
 import Speech2Text from "./s2t.js";
 
 
+
 var synth = window.speechSynthesis
-function text2spech(text) {
-    var utterThis = new SpeechSynthesisUtterance(text);
-    synth.speak(utterThis);
-}
-
-
 var allText = []
 class Welcome extends React.Component {
     constructor() {
@@ -42,6 +37,12 @@ class Welcome extends React.Component {
         });
     }
 
+    text2speech(text) {
+        synth.cancel()
+        var utterThis = new SpeechSynthesisUtterance(text);
+        synth.speak(utterThis);
+    }
+
     handleLoginSubmit(e) {
         if (e) {
             e.preventDefault();
@@ -51,7 +52,7 @@ class Welcome extends React.Component {
                 this.props.ask_auth()
             } else {
                 alert(req.data.detail)
-                text2spech(req.data.detail)
+                this.text2speech(req.data.detail)
 
                 this.setState({
                     email: "",
@@ -76,7 +77,7 @@ class Welcome extends React.Component {
                 this.props.ask_auth()
             } else {
                 alert(req.data.detail)
-                text2spech(req.data.detail)
+                this.text2speech(req.data.detail)
                 this.setState({
                     email: "",
                     password: "",
@@ -95,22 +96,25 @@ class Welcome extends React.Component {
     handleClick(e) {
         //e.preventDefault();
         if (e.keyCode === 32) {
-            text2spech(`To create a new account, please say "New account" and say your gmail address, username, and password respectively. OR
+            this.text2speech(`To create a new account, please say "New account" and say your gmail address, username, and password respectively. OR
             To enter to your existing account, please say "log in", and say your gmail address and password. Then Say "Submit" for operation.
-            Use the "ENTER key", to start, and end your speech. You can say "restart" to start over.`)
+            Use the "Escape key", to start, and end your speech. You can say "restart" to start over.`)
         }
     }
     
     componentDidMount() {
-        document.addEventListener('keypress', this.handleClick)
-
-        
+        document.addEventListener('keypress', this.handleClick)    
     }
 
+    componentWillUnmount() {
+        synth.cancel()
+        document.removeEventListener('keypress', this.handleClick)
+    }
     handleStart() {
         this.setState({
             listening: true
         })
+        synth.cancel()
     }
    
     handleEnd(err, text) {
@@ -119,6 +123,15 @@ class Welcome extends React.Component {
         if (!err) {
             if (text.toLowerCase().replace(/ /g, "") === "restart") {
                 allText = []
+                this.setState({
+                    listening: false
+                })
+                return;
+            }
+            if (text === "") {
+                this.setState({
+                    listening: false
+                })
                 return;
             }
             this.setState({
@@ -165,7 +178,7 @@ class Welcome extends React.Component {
             this.setState({
                 initial: false
             })
-            text2spech("Welcome To The Voice Based Email System. Please hit the spacebar to listen voice assistant")
+            this.text2speech("Welcome To The Voice Based Email System. Please hit the spacebar to listen voice assistant")
         } 
        
         return (

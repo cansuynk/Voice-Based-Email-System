@@ -19,16 +19,17 @@ class Speech2Text extends React.Component {
     this.handleListen = this.handleListen.bind(this)
   }
 
+
   componentDidMount(){
-    document.addEventListener('keypress', this.toggleListen)
+    document.addEventListener('keyup', this.toggleListen)
   }
 
   componentWillUnmount() {
-    document.removeEventListener("keypress", this.toggleListen)
+    document.removeEventListener("keyup", this.toggleListen)
   }
 
   toggleListen(event) {
-    if (event.keyCode === 13) {
+    if (event.keyCode ===  27) {
       this.setState({
         listening: !this.state.listening
       }, this.handleListen)
@@ -56,7 +57,11 @@ class Speech2Text extends React.Component {
     }
 
     recognition.onresult = (event) => {
-      this.props.onEnd(null, event.results[0][0].transcript)
+        var transcript = event.results[0][0].transcript
+        this.setState({
+          listening: false
+        })
+        this.props.onEnd(null, transcript)
     }
 
     recognition.onerror = event => {
