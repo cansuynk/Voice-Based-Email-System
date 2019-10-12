@@ -3,6 +3,7 @@ import './welcome.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes';
 import Speech2Text from "./s2t.js";
+import Spell2Text from "./spell2text.js"
 
 
 
@@ -194,7 +195,7 @@ class Welcome extends React.Component {
                     <div className="col-sm-8 main-section">
                        
                         <Speech2Text  onStart={this.handleStart} onEnd={this.handleEnd} />
-                       
+                        <Spell2Text onStart={this.handleStart} onEnd={this.handleEnd} />
   
 
                        

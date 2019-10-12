@@ -4,6 +4,7 @@ import './email.css';
 import Axios from 'axios';
 import { SUCCESS } from './error_codes.js';
 import Speech2Text from "./s2t.js";
+import Spell2Text from "./spell2text.js"
 
 var synth = window.speechSynthesis
 var allText = []
@@ -527,6 +528,7 @@ class Email extends React.Component {
           //Layout: "main div=> app_div(has all subdivs)", "header div", "menu div(left side)", "mails list div" and "mail content div"
           <div className="flex-centered">
               <Speech2Text onStart={this.handleStart} onEnd={this.handleEnd} />
+              <Spell2Text onStart={this.handleStart} onEnd={this.handleEnd} />
               <div className="app_div">
 
                   <div className="header_section">
