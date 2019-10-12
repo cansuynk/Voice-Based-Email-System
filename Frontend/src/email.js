@@ -24,6 +24,8 @@ class Email extends React.Component {
         this.handleClick = this.handleClick.bind(this);
         this.handleEnd = this.handleEnd.bind(this);
         this.handleStart = this.handleStart.bind(this);
+        this.get_emails = this.get_emails.bind(this);
+        //this.get_emails_sent = this.get_emails_sent.bind(this);
 
         this.state = {
 
@@ -53,8 +55,10 @@ class Email extends React.Component {
 }
 
     componentDidMount() {
-        this.get_emails()
+        this.get_emails();
+        document.addEventListener('keypress', this.handleClick)
     }
+
 
     get_emails() {
         Axios.post("/email/fetch_emails", {"search": "INBOX"}).then((req) => {
@@ -65,8 +69,19 @@ class Email extends React.Component {
             }
         })
     }
-    inboxFunction() {
 
+    /*
+    get_emails_sent() {
+        Axios.post("/email/fetch_emails", {"search": "SENT"}).then((req) => {
+            if (req.data.code === SUCCESS){
+                this.setState({
+                    InboxMails: req.data.data
+                })
+            }
+        })
+    }
+    */
+    inboxFunction() {
         //This function is for listing mails that are received.
         const list = this.state.InboxMails.map((item, index) => 
      
@@ -243,11 +258,6 @@ class Email extends React.Component {
         }
     }
 
-    componentDidMount() {
-        document.addEventListener('keypress', this.handleClick)
-
-
-    }
 
     handleStart() {
         this.setState({
