@@ -171,21 +171,21 @@ class Welcome extends React.Component {
             allText[1] = "testmailappleandbanana@gmail.com"  //Email is given direct to test our code
 
             //When user says login, related states will be assigned and login function is called
-            if (allText[0].toLowerCase().replace(/ /g, "") === "login") {
-
+            if (allText[0].toLowerCase().replace(/\s/g, "") === "login") {
+                console.log(allText[2].toLowerCase().replace(/\s/g, ""))
                 this.setState({
-                    email: allText[1].toLowerCase().replace(/ /g, ""),
-                    password: allText[2].toLowerCase().replace(/ /g, ""),
+                    email: allText[1].toLowerCase().replace(/\s/g, ""),
+                    password: allText[2].toLowerCase().replace(/\s/g, ""),
 
                 })
                 this.handleLoginSubmit(null);
             }
             //When user says new account, related states will be assigned and sign up function is called
-            else if (allText[0].toLowerCase().replace(/ /g, "") === "newaccount"){
+            else if (allText[0].toLowerCase().replace(/\s/g, "") === "newaccount"){
                 this.setState({
-                    email_for_registration: allText[1].toLowerCase().replace(/ /g, ""),
+                    email_for_registration: allText[1].toLowerCase().replace(/\s/g, ""),
                     username: allText[2].toLowerCase(),
-                    password_for_registration: allText[3].toLowerCase().replace(/ /g, ""),
+                    password_for_registration: allText[3].toLowerCase().replace(/\s/g, ""),
 
                 })
                 this.handleSignSubmit(null);
