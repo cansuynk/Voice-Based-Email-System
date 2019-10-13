@@ -6,12 +6,14 @@ import { SUCCESS } from './error_codes.js';
 import Speech2Text from "./s2t.js";
 import Spell2Text from "./spell2text.js"
 
-var synth = window.speechSynthesis
-var allText = []
-var sendingInfo = []
+var synth = window.speechSynthesis //for text to speech
+var allText = []        //Keeps the user sayings
+var sendingInfo = []    
 class Email extends React.Component {
     constructor() {
         super();
+
+        //Methods have to be binded to be able to use
         this.inboxFunction = this.inboxFunction.bind(this); //for listing mails that are received.
         this.sentFunction = this.sentFunction.bind(this);   //for listing mails that are sent.
         this.mailContent = this.mailContent.bind(this);     //for displaying the content of the selected mail
@@ -27,8 +29,8 @@ class Email extends React.Component {
 
         this.state = {
 
-            InboxMails: [],
-            SentMails: [],
+            InboxMails: [],     //Keeps all Inbox mails
+            SentMails: [],      //Keeps all Sent mails
             //initial mails list div 
             mailsContent: <tr ><td colSpan="2" id="noselected_div">   
                 No Folder selected.
@@ -53,14 +55,16 @@ class Email extends React.Component {
             sentEmail: false,
 
         };
-}
+    }
 
+    //This function converts the text to speech
     text2speech = (text) => {
         synth.cancel()
         var utterThis = new SpeechSynthesisUtterance(text);
         synth.speak(utterThis);
     }
 
+    //when the page is loaded, mails are received
     componentDidMount() {
         this.get_emails();
         this.get_emails_sent();
@@ -72,7 +76,7 @@ class Email extends React.Component {
         document.removeEventListener('keypress', this.handleClick)
     }
 
-
+    //This function is for receiving inbox emails from backend
     get_emails() {
         Axios.post("/email/fetch_emails", {"search": "INBOX"}).then((req) => {
             if (req.data.code === SUCCESS){
@@ -83,7 +87,7 @@ class Email extends React.Component {
         })
     }
 
-    
+    //This function is for receiving sent emails from backend
     get_emails_sent() {
         Axios.post("/email/fetch_emails", {"search": "SENT"}).then((req) => {
             if (req.data.code === SUCCESS){
@@ -93,7 +97,8 @@ class Email extends React.Component {
             }
         })
     }
-    
+
+    //This function shows the inbox mails on the mails list section
     inboxFunction() {
         //This function is for listing mails that are received.
         const list = this.state.InboxMails.map((item, index) => 
@@ -113,6 +118,7 @@ class Email extends React.Component {
 
     }
 
+    //This function shows the sent mails on the mails list section
     sentFunction() {
 
         //This function is for listing mails that are sent.
@@ -134,8 +140,8 @@ class Email extends React.Component {
 
     }
 
+    //This function is for displaying the content of the selected mail
     mailContent(item, id) {
-        //This function is for displaying the content of the selected mail
 
         var from_to = "From: "  //If a received mail is wanted to display, it changes the header of the table
         var address = item.target
@@ -170,9 +176,8 @@ class Email extends React.Component {
 
     }
 
+    //This function changes the mail content div to be able to send a mail, it gives a form: "mail to send", "subject to send" and "message to send"
     sendMail() {
-
-        //This function changes the mail content div to be able to send a mail, it gives a form: "mail to send", "subject to send" and "message to send"
 
         this.setState({
             mailBody: 
@@ -228,6 +233,8 @@ class Email extends React.Component {
 
         
     }
+
+    //This function is for exit from the email page
     handleLogout(e){
         if (e) {
             e.preventDefault();
@@ -241,6 +248,7 @@ class Email extends React.Component {
         })
         this.props.ask_auth();
     }
+
     //For handling inputs(mail to send, subject and message) from sending mail menu
     handleChange(e) {
         this.setState({
@@ -249,6 +257,7 @@ class Email extends React.Component {
    
     }
 
+    //This function provide a connection between the database to send email
     handleSendSubmit(e) {
         if (e) {
             e.preventDefault()
@@ -270,6 +279,7 @@ class Email extends React.Component {
           })
     }
 
+    //When the user is pressed the space, the voice assistant starts to inform about the options
     handleClick(e) {
         //e.preventDefault();
         if (e.keyCode === 32) {
@@ -277,7 +287,7 @@ class Email extends React.Component {
         }
     }
 
-
+    //This function starts the speech to text process
     handleStart() {
         this.setState({
             listening: true
@@ -285,6 +295,7 @@ class Email extends React.Component {
         synth.cancel(); 
     }
 
+    //This function ends the speech to text process and speech will be saved
     handleEnd(err, text) {
 
         console.log(text)
@@ -299,15 +310,13 @@ class Email extends React.Component {
         this.setState({
             listening: false
         })
-        if (this.state.inboxEmail === true) { //inboxdan istedi�i maili sesli ald���m�z i�in menudeki seslerle kar��mamas� ad�na burada ayr� ald�m s�ylenenleri
+        if (this.state.inboxEmail === true) { //When the user wants to listen any inbox mail
 
-          
-
-            var option = text //s�yledi�i �ey 
+            var option = text  //the user's speech
 
             console.log(option)
 
-            if (option.toLowerCase() === "menu") {  //menu derse geri d�n�yor menudeki se�eneklere
+            if (option.toLowerCase() === "menu") {  //If users says the menu keyword, voice assistant tells the menu options
                 option = ""
                 this.setState({
                     inboxEmail: false,
@@ -315,7 +324,7 @@ class Email extends React.Component {
                 })
                 this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
             }
-            else if (option.toLowerCase() === "restart") {  //restart derse tekrar s�yl�yor mailleri ama garip s�yl�yor de�i�tirmek laz�m
+            else if (option.toLowerCase() === "restart") {  //If users says the restart keyword, user can say the information again
                 option = ""
                 var speech = "You have " + this.state.InboxMails.length + "  emails."
 
@@ -326,7 +335,7 @@ class Email extends React.Component {
                 this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
             }
             else {
-                if(!isNaN(option)) {
+                if(!isNaN(option)) {        //When the user says the index of the mail, voice assistant tells the content of the selected mail
                     var mail = this.state.InboxMails[parseInt(option)  - 1]
                     this.mailContent(mail, 0);
                     this.text2speech("From: " + mail.target + "! . ! Subject:" + mail.subject + "! . ! Content:"  + mail.content);
@@ -335,13 +344,13 @@ class Email extends React.Component {
                 } 
             }
         }
-        //bo�
-        else if (this.state.sentEmail === true) {
+        
+        else if (this.state.sentEmail === true) {       //When the user wants to listen any sent mail
             var option = text 
 
             console.log(option)
 
-            if (option.toLowerCase() === "menu") {  //menu derse geri d�n�yor menudeki se�eneklere
+            if (option.toLowerCase() === "menu") {  //If users says the menu keyword, voice assistant tells the menu options
                 option = ""
                 this.setState({
                     sentEmail: false,
@@ -349,7 +358,7 @@ class Email extends React.Component {
                 })
                 this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
             }
-            else if (option.toLowerCase() === "restart") {  //restart derse tekrar s�yl�yor mailleri ama garip s�yl�yor de�i�tirmek laz�m
+            else if (option.toLowerCase() === "restart") {  //If users says the restart keyword, user can say the informations again
                 option = ""
                 var speech = "You have " + this.state.SentMails.length + "  emails."
 
@@ -360,7 +369,7 @@ class Email extends React.Component {
                 this.text2speech(speech + "! . ! Say the index of email to listen. menu to return menu and restart to listen list of emails ")
             }
             else {
-                if(!isNaN(option)) {
+                if (!isNaN(option)) {        //When the user says the index of the mail, voice assistant tells the content of the selected mail
                     var mail = this.state.SentMails[parseInt(option)  - 1]
                     this.mailContent(mail, 0);
                     this.text2speech("From: " + mail.target + "! . ! Subject:" + mail.subject + "! . ! Content:"  + mail.content);
@@ -372,33 +381,34 @@ class Email extends React.Component {
 
 
         }
-        else if (this.state.sendEmail === true) {  //s�ylenenleri ay�rabilmek i�in yazd�m
-            sendingInfo.push(text)  //bu arrayde tutucak t�m s�ylenenleri tek tek
+        else if (this.state.sendEmail === true) {   //When the user wants to send an email
+            sendingInfo.push(text)          //All sending info are kept into this array
             console.log(sendingInfo)
 
-            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "send") {  //email, konu ve i�eri�i yazd�ktan sonra bunun i�ine girip al�cak teker teker
+            if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "send") {  
 
                 //sendingInfo[0] = sendingInfo[0].replace(/ /g, "").slice(0, sendingInfo[0].indexOf("atgmail.com")) + "@gmail.com"
 
-                sendingInfo[0] = "mail.system.test123@gmail.com"  //email k�sm�na bunu direk koydurdum, anlam�yor ��nk�
+                sendingInfo[0] = "mail.system.test123@gmail.com"  //Email is given direct to test our code
 
-                //Bunlar mail yollama k�sm�ndaki inputlar� dolduruyor
+               //The related local states are assigned to sending info
                 this.setState({
                     email_to_send: sendingInfo[0],
                     subject_to_send: sendingInfo[1].toLowerCase(),
                     message_to_send: sendingInfo[2].toLowerCase(),
                 })
 
+                //Content of the input areas are changed
                 document.getElementById("address").value = this.state.email_to_send
                 document.getElementById("subject").value = this.state.subject_to_send
                 document.getElementById("message").value = this.state.message_to_send
 
-                //yaz�lanlar� teyit etmek i�in tekrarl�yor adam correct derse as�l yollama i�lemi olcak
+                //Voice assistant tells the all info saying from the user to be ensure the correctness
                 this.text2speech("If these sending information are correct, please say correct, if not please say restart to start over." 
                 + "! . !To:" + this.state.email_to_send + "! . !Subject:" + this.state.subject_to_send + "! . !Message:" + this.state.message_to_send)
 
             }
-            //menu derse menuy� tekrar s�yl�yor ve mail yollama b�l�m�nden ��k�yor.
+            //If users says the menu keyword, voice assistant tells the menu options
             if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "menu") {
                 sendingInfo = []
                 this.setState({
@@ -409,12 +419,13 @@ class Email extends React.Component {
 
 
             }
-            //restart derse ne s�ylemesi gerekti�i bilgisini veriyor
+            //If users says the restart keyword, user can say the informations again
             else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "restart") {
                 sendingInfo = []
                 this.text2speech("Say address, subject, and message")
             }
-            //correct derse mail yollama i�lemi olcak ve inputlar�n i�ini s�f�rl�yor
+
+            //If user says correct keyword, the email is send
             else if (sendingInfo[sendingInfo.length - 1].toLowerCase() === "correct") {
                 sendingInfo = []
                 this.text2speech()
@@ -435,11 +446,10 @@ class Email extends React.Component {
         }
 
         else {
-            //bu else menuden se�ilenleri arraya kaydediyor
             allText.push(this.state.text)
             console.log(allText)
-            //send mail derse mail yollama b�l�m�n� getiriyor ve o b�l�mdeki s�ylenenleri ayr� almas� i�in yukardaki ife yazd�m
-            if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "sendemail") {
+            
+            if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "sendemail") { //If user choose the send mail option, send mail methods is called
                 console.log("send")
                 this.sendMail()
 
@@ -453,10 +463,10 @@ class Email extends React.Component {
                 })
                 allText = []
             }
-            else if (allText[allText.length - 1].toLowerCase() === "listen") {
+            else if (allText[allText.length - 1].toLowerCase() === "listen") {  //If user choose the listen mail option
                 this.text2speech("To listen to Inbox emails, say inbox, To listen to Sent emails, say sent.  You can say restart to start over.")
             }
-            else if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "logout") {
+            else if (allText[allText.length - 1].toLowerCase().replace(/ /g, "") === "logout") {    //If user choose the logout option, log out methods is called
                 console.log("logout")
                 this.handleLogout(null)
             }
@@ -464,7 +474,7 @@ class Email extends React.Component {
                 this.text2speech("To Send Email, please say Send Email. To Listen Email, say Listen. and To Exit, say Logout")
                 allText = []
             }
-            //adam inbox derse inboxdaki mailleri ekrana getiriyor ka� maili var s�yl�yor
+            //When the user says inbox to listen an inbox mail
             else if (allText[allText.length - 1].toLowerCase() === "inbox") {
                 this.inboxFunction()
                 var speech = "You have " + this.state.InboxMails.length + "  emails."
@@ -474,9 +484,7 @@ class Email extends React.Component {
                 }) 
 
                 this.text2speech(speech + "! . ! Say the the index of email to listen. menu to return menu and restart to listen list of emails ")
-                //�u k�s�mda kafay� yedim de�i�tirebilirsin
-
-                //burdaki s�yledikleri menudeki arrayle kar��mas�n diye ayr� yerde saklamak i�in bir flag, yukar�daki "if" yap�l�yor
+               
                 this.setState({
                     sendEmail: false,
                     sentEmail: false,
@@ -486,7 +494,7 @@ class Email extends React.Component {
                 allText = []
 
             }
-                //bo�
+              //When the user says sent or send to listen an sent mail
             else if (allText[allText.length - 1].toLowerCase() === "sent" || allText[allText.length - 1].toLowerCase() === "send") {
                 this.sentFunction()
                 var speech = "You have " + this.state.SentMails.length + "  emails."
@@ -502,7 +510,7 @@ class Email extends React.Component {
                     inboxEmail: false
                 })
             }
-            //menude olmayan bir �ey derse yanl�� opsiyon
+            //If the user says anything that is not in the menu
             else {
                 this.text2speech("Wrong Option, please say again")
                 allText = []
@@ -515,6 +523,7 @@ class Email extends React.Component {
 
     render() {
 
+         //Voice assistant informs the user about success login in the initial load
         if (this.state.initial === true) {
             this.setState({
                 initial: false
@@ -562,7 +571,6 @@ class Email extends React.Component {
                                   <button className="btn badge" data-badge={this.state.InboxMails.length} onClick={this.inboxFunction}>
                                       Inbox
                                    </button>
-
 
                               </li>
 

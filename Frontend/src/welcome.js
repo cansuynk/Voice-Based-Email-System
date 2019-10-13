@@ -7,8 +7,8 @@ import Spell2Text from "./spell2text.js"
 
 
 
-var synth = window.speechSynthesis
-var allText = []
+var synth = window.speechSynthesis  //for text to speech
+var allText = []        //Keeps the user sayings
 class Welcome extends React.Component {
     constructor() {
         super();
@@ -24,6 +24,7 @@ class Welcome extends React.Component {
             count:0
         }
 
+        //Methods have to be binded to be able to use
         this.handleChange = this.handleChange.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
         this.handleSignSubmit = this.handleSignSubmit.bind(this);
@@ -32,18 +33,21 @@ class Welcome extends React.Component {
         this.handleStart = this.handleStart.bind(this);
     }
 
+    //Input values are kept in the local states
     handleChange(e) {
         this.setState({
             [e.target.name]: e.target.value
         });
     }
 
+    //This function converts the text to speech
     text2speech(text) {
         synth.cancel()
         var utterThis = new SpeechSynthesisUtterance(text);
         synth.speak(utterThis);
     }
 
+    //When login button is pressed, this method is called. It sends the login info to backend
     handleLoginSubmit(e) {
         if (e) {
             e.preventDefault();
@@ -55,6 +59,7 @@ class Welcome extends React.Component {
                 alert(req.data.detail)
                 this.text2speech(req.data.detail)
 
+                //States will be emptied
                 this.setState({
                     email: "",
                     password: "",
@@ -69,6 +74,7 @@ class Welcome extends React.Component {
         })
     }
 
+    //When sign up button is pressed, this method is called. It sends the sign up info to backend
     handleSignSubmit(e) {
         if (e){
             e.preventDefault();
@@ -79,6 +85,8 @@ class Welcome extends React.Component {
             } else {
                 alert(req.data.detail)
                 this.text2speech(req.data.detail)
+
+                //States will be emptied
                 this.setState({
                     email: "",
                     password: "",
@@ -94,6 +102,7 @@ class Welcome extends React.Component {
         })
     }
 
+    //When user is pressed the space key, voice assistant starts to inform user about options
     handleClick(e) {
         //e.preventDefault();
         if (e.keyCode === 32) {
@@ -102,7 +111,8 @@ class Welcome extends React.Component {
             Use the "Escape key", to start, and end your speech. You can say "restart" to start over.`)
         }
     }
-    
+
+    //when the page is loaded
     componentDidMount() {
         document.addEventListener('keypress', this.handleClick)    
     }
@@ -111,13 +121,16 @@ class Welcome extends React.Component {
         synth.cancel()
         document.removeEventListener('keypress', this.handleClick)
     }
+
+    //This function starts the speech to text process
     handleStart() {
         this.setState({
             listening: true
         })
         synth.cancel()
     }
-   
+
+    //This function ends the speech to text process and speech will be saved
     handleEnd(err, text) {
 
         console.log(text)
@@ -145,27 +158,34 @@ class Welcome extends React.Component {
             listening: false
         })
 
+        //All speeches are kept into this array
         allText.push(text)
         console.log(allText)
 
+        //When user says the submit
         if (allText[allText.length - 1].toLowerCase() === "submit") {
 
-            allText[1] = allText[1].slice(0, allText[1].indexOf("atgmail.com")) + "@gmail.com"
-         
+            //Since @ is understands like "at", it converts to correct gmail form
+            //allText[1] = allText[1].slice(0, allText[1].indexOf("atgmail.com")) + "@gmail.com"
+
+            allText[1] = "testmailappleandbanana@gmail.com"  //Email is given direct to test our code
+
+            //When user says login, related states will be assigned and login function is called
             if (allText[0].toLowerCase().replace(/ /g, "") === "login") {
 
                 this.setState({
                     email: allText[1].toLowerCase().replace(/ /g, ""),
-                    password: allText[2].toLowerCase(),
+                    password: allText[2].toLowerCase().replace(/ /g, ""),
 
                 })
                 this.handleLoginSubmit(null);
             }
+            //When user says new account, related states will be assigned and sign up function is called
             else if (allText[0].toLowerCase().replace(/ /g, "") === "newaccount"){
                 this.setState({
                     email_for_registration: allText[1].toLowerCase().replace(/ /g, ""),
                     username: allText[2].toLowerCase(),
-                    password_for_registration: allText[3].toLowerCase(),
+                    password_for_registration: allText[3].toLowerCase().replace(/ /g, ""),
 
                 })
                 this.handleSignSubmit(null);
@@ -175,6 +195,7 @@ class Welcome extends React.Component {
     }
     
     render() {
+        //Voice assistant welcomes the user in the initial load
         if (this.state.initial === true) {
             this.setState({
                 initial: false
@@ -193,12 +214,10 @@ class Welcome extends React.Component {
 
                 <div className="content">
                     <div className="col-sm-8 main-section">
-                       
+
+                        
                         <Speech2Text  onStart={this.handleStart} onEnd={this.handleEnd} />
                         <Spell2Text onStart={this.handleStart} onEnd={this.handleEnd} />
-  
-
-                       
                    
 
                         <form onSubmit={this.handleLoginSubmit}>
