@@ -6,6 +6,7 @@ const simpleParser = require('mailparser').simpleParser;
 const {SUCCESS, NOT_AUTH, UNEXPECTED} = require("./error_codes.js");
 
 
+//Fetch emails from folder indicated at req.body["search"] (either "SENT" or "INBOX")
 exports.fetch_emails = function(req, response) {
     if (req.session.address) {
         get_emails(new Imap({
@@ -18,6 +19,7 @@ exports.fetch_emails = function(req, response) {
             },
             tls: true
         }), req.body["search"], (emails) => {
+            //Success Response
             response.send( {
                 code: SUCCESS,
                 detail: "Success",
@@ -25,6 +27,7 @@ exports.fetch_emails = function(req, response) {
             })
         })
     } else {
+        //Session is null so user is not authenticated yet
         response.send({
             code: NOT_AUTH,
             detail: "user not authenticated",
@@ -33,25 +36,30 @@ exports.fetch_emails = function(req, response) {
     }
 }
 
+//Send email using gmail-send package
 exports.send_email = function(req, response) {
     if (req.session.address) {
+        //Extract necessary information from request body
         const body = req.body;
         const subject = body["subject"];
         const to = body["to"];
         const content = body["content"]
         write_email({
+            //Exctract credentials from the session
             user: req.session.address,
             pass: req.session.password,
             to:   to,
             subject: subject
         }, content, (err, res) => {
             if (err) {
+                //Fails if user supplied wrong password on sign in
                 response.send({
                     code: UNEXPECTED,
                     detail: err,
                     data: null
                 })
             } else {
+                //Success response
                 response.send({
                     code: SUCCESS,
                     detail: "Success",
@@ -62,6 +70,7 @@ exports.send_email = function(req, response) {
         })
 
     } else {
+        //Session is null so user is not authenticated yet
         response.send({
             code: NOT_AUTH,
             detail: "user not authenticated",
@@ -71,6 +80,7 @@ exports.send_email = function(req, response) {
 }
 
 
+//Local function used by send_email
 function write_email(options, content, callback) {
     const send = Gmail(options)
     send({text: content, }, (error, result, fullResult) => {
@@ -83,13 +93,18 @@ function write_email(options, content, callback) {
     })
 }
 
+//Local helper for fetch_emails functions
 function get_emails(imap, search_str,callback) {
     var emails = []
     function openBox(cb) {
+        //Open the requested box (email folder "Sent emails" or "Inbox")
         imap.getBoxes((err, boxes) => {
             console.log(boxes);
             if (search_str === "SENT") {
                 var objs = boxes["[Gmail]"].children
+                //API is language dependend so sent emails box cannot be address directly as "Sent Mails"
+                //For example, Turkish users have "Gönderilmiş Postalar" folder
+                //So iterate over all boxes to find the correct one by checking attributes
                 for (let key of Object.keys(objs)) {
                     if (objs[key].attribs[1] === "\\Sent") {
                         console.log("[Gmail]/" + key.trim(), ":",objs[key].attribs[1])
@@ -108,6 +123,7 @@ function get_emails(imap, search_str,callback) {
     openBox(function(err, box) {
     if (err) throw err;
 
+    //Get ALL emails in the box
     imap.search(['ALL'], function(err, results) { 
         if (err) throw err;
 
@@ -116,16 +132,20 @@ function get_emails(imap, search_str,callback) {
         console.log('Message #%d', seqno); 
         var prefix = '(#' + seqno + ') ';
 
+        //Logic of handling data stream 
         msg.on('body', function(stream, info) {
             console.log(prefix + 'Body');
             const chunks = [];
+            //Push received chunks to an array
             stream.on("data", function (chunk) {
                 chunks.push(chunk);
             });
 
             stream.on("end", function () {
+                //On End, concat the chunks, convert to string and parse using simpleParser
                 simpleParser(Buffer.concat(chunks).toString(), (err, mail) => {
                     var target, subject, content;
+                    //Inbox and Sent mails parsed differently
                     if (search_str === "INBOX") {
                         target = mail.from.text;
                         subject = mail.subject;
@@ -135,6 +155,7 @@ function get_emails(imap, search_str,callback) {
                         subject = mail.subject;
                         content = mail.text;
                     }
+                    //Push parsed emails to the array 
                     emails.push({
                         target: target,
                         subject: subject,
